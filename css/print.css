@@ -1,0 +1,153 @@
+/* ==========================================================================
+   print.css — PDF 변환 (Reveal.js ?print-pdf 모드) 전용 (v2.0)
+   design.md §C.5 명세 그대로 + 다크 모드 색상 보존
+   ========================================================================== */
+
+@media print {
+
+  /* 슬라이드별 정확히 1페이지 출력 + 1920×1080 캔버스 강제 + section 패딩 복원
+     Reveal.js print 룰: html.reveal-print .reveal .slides section { padding:0 !important }
+     specificity (0,3,2). 동일 selector 로 맞춰야 cascade 에서 우리 print.css(가장 늦게 로드)가 이긴다. */
+  html.reveal-print .reveal .slides section,
+  html.reveal-print .reveal .slides section.present {
+    page-break-after: always;
+    height: 1080px !important;
+    width: 1920px !important;
+    min-height: 1080px !important;
+    overflow: hidden;
+    padding: var(--pad-top) var(--pad-x) var(--pad-bottom) var(--pad-x) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 프로그레스 바·컨트롤 숨김 */
+  .reveal .progress,
+  .reveal .controls,
+  .reveal .speaker-notes,
+  .reveal .pause-overlay,
+  .reveal .backgrounds,
+  .reveal .slide-number {
+    display: none !important;
+  }
+
+  /* 배경 그래픽 강제 출력 — 다크 배경·카드·gradient 보존 */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* 다크 배경 강제 */
+  html, body, .reveal-viewport, .reveal,
+  .reveal .slides section {
+    background: var(--color-bg-main) !important;
+    color: var(--color-text-primary) !important;
+    font-family: var(--font-sans) !important;
+  }
+
+  /* 페이지 여백 0 — Chrome 인쇄에서도 "여백 없음" 권장 */
+  @page {
+    size: 1920px 1080px;
+    margin: 0;
+  }
+
+  /* Card·Compare·Pillar 배경 보존 */
+  .card,
+  .pillar-card,
+  .compare-col,
+  .stat-card,
+  .limit-card,
+  .stack-layer,
+  .matrix-table thead th,
+  .matrix-table tbody th {
+    background: var(--color-bg-surface) !important;
+  }
+
+  .card.is-elevated {
+    background: var(--color-bg-elevated) !important;
+  }
+
+  /* Accent gradient 카드 보존 */
+  .compare-col.is-after,
+  .stack-layer.is-accent,
+  .card.is-accent,
+  .matrix-table tbody td.cell-priority {
+    background: linear-gradient(135deg, var(--color-bg-surface), var(--color-accent-10)) !important;
+    border: 1px solid var(--color-accent-20) !important;
+  }
+
+  /* Pillar Card 의 accent radial blur 보존 */
+  .pillar-card::after,
+  .tpl-title .accent-blur {
+    background: radial-gradient(circle, var(--color-accent-10) 0%, transparent 70%) !important;
+  }
+
+  /* Quote/PullQuote 글리프 색상 보존 */
+  .quote-glyph,
+  .rebuttal-callout .callout-glyph {
+    color: var(--color-accent) !important;
+  }
+
+  /* Reveal print 의 section { display:block !important } 를 무력화하고 각 템플릿 본래 display 복원.
+     selector specificity (0,4,2) 로 Reveal (0,3,2) 를 이김. templates.css 와 동일 의도. */
+
+  /* flex-column 템플릿 */
+  html.reveal-print .reveal .slides section.tpl-title,
+  html.reveal-print .reveal .slides section.tpl-divider,
+  html.reveal-print .reveal .slides section.tpl-conclusion,
+  html.reveal-print .reveal .slides section.tpl-bignum,
+  html.reveal-print .reveal .slides section.tpl-quote,
+  html.reveal-print .reveal .slides section.tpl-agenda,
+  html.reveal-print .reveal .slides section.tpl-workflow,
+  html.reveal-print .reveal .slides section.tpl-compare,
+  html.reveal-print .reveal .slides section.tpl-rebuttal,
+  html.reveal-print .reveal .slides section.tpl-limits,
+  html.reveal-print .reveal .slides section.tpl-takeaways {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* grid 템플릿 — 좌우 분할 */
+  html.reveal-print .reveal .slides section.tpl-pillar,
+  html.reveal-print .reveal .slides section.tpl-split {
+    display: grid !important;
+    grid-template-columns: 4fr 6fr !important;
+  }
+  html.reveal-print .reveal .slides section.tpl-data {
+    display: grid !important;
+    grid-template-columns: 5fr 7fr !important;
+  }
+
+  /* 수직 중앙정렬 — Title · Divider · Conclusion */
+  html.reveal-print .reveal .slides section.tpl-title,
+  html.reveal-print .reveal .slides section.tpl-divider,
+  html.reveal-print .reveal .slides section.tpl-conclusion {
+    justify-content: center !important;
+  }
+  html.reveal-print .reveal .slides section.tpl-title,
+  html.reveal-print .reveal .slides section.tpl-divider {
+    align-items: flex-start !important;
+  }
+  html.reveal-print .reveal .slides section.tpl-conclusion {
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  /* 보조 텍스트 색상 */
+  .t-muted,
+  .t-caption,
+  .slide-footer,
+  .caption,
+  .stat-source,
+  .step-num,
+  .step-desc,
+  .takeaway-desc,
+  .limit-desc,
+  .pillar-source,
+  .data-table tbody td.col-label,
+  .compare-table tbody td.col-label,
+  .compare-table thead th {
+    color: var(--color-text-secondary) !important;
+  }
+}

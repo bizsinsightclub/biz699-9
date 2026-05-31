@@ -1,0 +1,239 @@
+/* ==========================================================================
+   base.css — 슬라이드 공통 스타일 (v2.0)
+   1920×1080 캔버스. 모든 색상·간격·폰트는 tokens.css 변수만 참조.
+   Rule R-1: section의 transform/opacity 오버라이드 절대 금지.
+   Rule R-2: Reveal.js 기본 viewport 그라데이션 무력화 의무.
+   ========================================================================== */
+
+/* === R-2: Reveal.js 기본 viewport 그라데이션 차단 === */
+html, body, .reveal-viewport, .reveal {
+  background: var(--color-bg-main) !important;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overflow: hidden;
+}
+
+/* === Reveal.js 컨테이너 === */
+.reveal {
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+.reveal .slides {
+  text-align: left;
+}
+
+/* === Slide Section ===
+   R-1 (강화 v2): section 의 position·transform·opacity 는 절대 손대지 않는다.
+   width/height/box-sizing 은 Reveal.js navigation 과 충돌하지 않으므로 명시 가능.
+   display 는 reveal.css 의 .present { display: block } 과 specificity 충돌하므로
+   section.tpl-X 형식의 더 높은 specificity 셀렉터 또는 !important 로 덮어쓴다. */
+.reveal .slides section {
+  background: var(--color-bg-main);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  text-align: left;
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom) var(--pad-x);
+  box-sizing: border-box;
+  height: 1080px;     /* 자식의 height: 100% 를 위해 명시 (Reveal.js width/height config 와 동일) */
+}
+
+/* === 전역 텍스트 리셋 === */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal p,
+.reveal ul,
+.reveal ol,
+.reveal li,
+.reveal table,
+.reveal tr,
+.reveal td,
+.reveal th {
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  text-transform: none;
+  text-shadow: none;
+  letter-spacing: inherit;
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+
+.reveal ul,
+.reveal ol,
+.reveal li {
+  list-style: none;
+}
+
+.reveal a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.reveal em {
+  font-style: italic;
+}
+
+.reveal strong, .reveal b {
+  font-weight: var(--fw-semibold);
+}
+
+/* === Typography 위계 클래스 === */
+.t-display {
+  font-size: var(--fs-display);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  color: var(--color-text-primary);
+}
+
+.t-title {
+  font-size: var(--fs-title);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-title);
+  letter-spacing: var(--ls-title);
+  color: var(--color-text-primary);
+}
+
+.t-section {
+  font-size: var(--fs-section);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-section);
+  letter-spacing: var(--ls-section);
+  color: var(--color-text-primary);
+}
+
+.t-subsection {
+  font-size: var(--fs-subsection);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-subsection);
+  letter-spacing: var(--ls-subsection);
+  color: var(--color-text-primary);
+}
+
+.t-body {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--color-text-primary);
+}
+
+.t-body-bold {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--color-text-primary);
+}
+
+.t-caption {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-caption);
+  color: var(--color-text-secondary);
+}
+
+.t-eyebrow {
+  font-size: var(--fs-eyebrow);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-eyebrow);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.t-eyebrow.is-accent {
+  color: var(--color-accent);
+}
+
+/* === 강조 색상 inline === */
+.hl {
+  color: var(--color-accent);
+  font-weight: var(--fw-semibold);
+}
+
+.t-muted {
+  color: var(--color-text-secondary);
+}
+
+.t-mono {
+  font-family: var(--font-mono);
+}
+
+/* === Slide Footer (좌: meta / 우: source + page-num 2줄 stack) === */
+.slide-footer {
+  position: absolute;
+  bottom: 40px;
+  left: 60px;
+  right: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-weight: var(--fw-regular);
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
+.slide-footer .meta {
+  letter-spacing: 0.02em;
+}
+
+.slide-footer .footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.slide-footer .source {
+  font-size: 16px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0;
+  font-weight: var(--fw-regular);
+  line-height: 1.4;
+  max-width: 700px;
+  text-align: right;
+}
+
+.slide-footer .page-num {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+/* === Reveal 자체 UI 정리 === */
+.reveal .progress {
+  color: var(--color-accent);
+  height: 3px;
+}
+
+.reveal .controls {
+  color: var(--color-text-secondary);
+}
+
+.reveal .slide-number {
+  display: none;            /* 자체 footer 사용 */
+}
+
+/* === 한국어 본문 보정 === */
+.reveal p,
+.reveal li,
+.reveal td,
+.reveal .t-body,
+.reveal .t-body-bold {
+  word-break: keep-all;
+  text-wrap: pretty;
+}
