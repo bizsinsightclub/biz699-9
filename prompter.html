@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>9조 텔레프롬프터 · BIZ699 — 지식 액체화</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+KR:wght@300;500;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
   :root{
     --bg:#000; --text:#fff; --dim:#555; --border:#1d1d1d;
@@ -64,6 +66,18 @@
   .nav-btn{background:#000;color:#fff;border:1px solid var(--border);padding:11px 22px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.05em;}
   .nav-btn:hover{background:#fff;color:#000;}
   .hint{position:fixed;bottom:30px;left:360px;font-size:11px;color:var(--dim);letter-spacing:0.08em;}
+
+  /* === 리모컨 QR 패널 === */
+  #remotePanel{position:fixed;top:64px;right:24px;width:300px;background:var(--panel,#141414);border:1px solid var(--border);border-radius:16px;padding:22px;z-index:80;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+  #remotePanel.hidden{display:none;}
+  #remotePanel .rp-title{font-size:14px;font-weight:900;letter-spacing:0.06em;color:#fff;}
+  #remotePanel .rp-sub{font-size:12px;color:var(--dim);margin-top:6px;line-height:1.5;word-break:keep-all;}
+  #remotePanel #qrbox{width:200px;height:200px;margin:16px auto;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  #remotePanel #qrbox img, #remotePanel #qrbox canvas{width:200px;height:200px;}
+  #remotePanel .rp-stat{font-size:12px;font-weight:700;letter-spacing:0.05em;margin-top:6px;}
+  #remotePanel .rp-stat.on{color:#0c0;} #remotePanel .rp-stat.off{color:var(--accent);}
+  #remotePanel .rp-close{margin-top:14px;background:#000;border:1px solid var(--border);color:#fff;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;}
+  .deck-btn.remote-on{background:#0a0;color:#fff;}
   ::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-thumb{background:#222;}
 </style>
 </head>
@@ -78,10 +92,21 @@
   <div class="head-right">
     <div class="status-tag" id="screenTag" title="감지된 디스플레이">화면 ?</div>
     <div class="status-tag" id="statusTag">STANDBY</div>
+    <button class="deck-btn" id="remoteBtn" onclick="toggleRemote()" style="background:#000;color:#fff;border:1px solid var(--border);">📱 리모컨</button>
     <button class="deck-btn" id="coverBtn" onclick="coverShow()" style="background:#000;color:#fff;border:1px solid var(--border);">가림 (Esc)</button>
     <button class="deck-btn" id="deckBtn" onclick="toggleDeck()">프로젝터에 슬라이드 띄우기</button>
   </div>
 </header>
+
+<div id="remotePanel" class="hidden">
+  <div class="rp-title">📱 핸드폰 리모컨</div>
+  <div class="rp-sub">폰 카메라로 QR 스캔 → 리모컨 연결</div>
+  <div id="qrbox">준비 중…</div>
+  <a id="rpUrl" href="#" target="_blank" style="display:block;font-size:10px;color:#666;word-break:break-all;margin-top:6px;text-decoration:none;"></a>
+  <div class="rp-stat off" id="rpStat">리모컨 대기 중</div>
+  <div class="rp-sub" style="margin-top:8px;">가장 확실한 연결: 노트북·폰을 <b>같은 핫스팟</b>에</div>
+  <button class="rp-close" onclick="toggleRemote()">닫기</button>
+</div>
 
 <div id="main">
   <div id="sidebar">
@@ -182,6 +207,7 @@ function coverShow(){
   coverVisible = true;
   document.getElementById('cover').classList.remove('hidden');
   document.getElementById('statusTag').innerText = started ? 'PAUSED' : 'STANDBY';
+  if(typeof broadcastState === 'function') broadcastState();
 }
 function coverHide(){
   coverVisible = false;
@@ -193,6 +219,7 @@ function coverHide(){
   } else {
     toggleDeck();   // 슬라이드 창을 프로젝터에 열고 현재 슬라이드로 동기화 (status 는 toggleDeck 이 설정)
   }
+  if(typeof broadcastState === 'function') broadcastState();
 }
 
 /* ===== Reveal.js 로 슬라이드 명령 전송 =====
@@ -220,6 +247,7 @@ function goSlide(idx, isExternal=false){
   if(deckWin && !deckWin.closed) postToReveal(deckWin, idx);
 
   if(!isExternal) sync.postMessage({slide: idx});
+  if(typeof broadcastState === 'function') broadcastState();   // 핸드폰 리모컨에 상태 반영
 }
 
 /* ===== 발표 창 열기/닫기 (멀티스크린 자동 배치) =====
@@ -292,6 +320,59 @@ window.onkeydown = (e)=>{
 /* ===== 보조 창 동기화 수신 ===== */
 sync.onmessage = (e)=>{ if(e.data && typeof e.data.slide==='number') goSlide(e.data.slide, true); };
 
+/* ===== 핸드폰 리모컨 (PeerJS WebRTC 호스트) ===== */
+let peer = null, remotes = [];
+function toggleRemote(){
+  const panel = document.getElementById('remotePanel');
+  if(!panel.classList.contains('hidden')){ panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+  if(!peer) initRemote();
+}
+function initRemote(){
+  setRemoteStat('off','PeerJS 연결 중…');
+  peer = new Peer();
+  peer.on('open', (id)=>{
+    // 폰이 열 remote.html 의 공개 주소 (file:// 이면 Pages 주소로 폴백)
+    const base = (location.protocol === 'file:')
+      ? 'https://bizsinsightclub.github.io/biz699-9/'
+      : location.href.replace(/[^/]*(\?.*)?$/, '');
+    const url = base + 'remote.html?id=' + id;
+    renderQR(url);
+    const a = document.getElementById('rpUrl'); a.href = url; a.innerText = url;
+    setRemoteStat('off','리모컨 대기 중 — QR 스캔');
+  });
+  peer.on('connection', (conn)=>{
+    conn.on('open', ()=>{ remotes.push(conn); setRemoteStat('on','리모컨 연결됨 ✓'); document.getElementById('remoteBtn').classList.add('remote-on'); sendState(conn); });
+    conn.on('data', (d)=> handleRemoteCmd(d));
+    conn.on('close', ()=>{ remotes = remotes.filter(c=>c!==conn); if(!remotes.length){ setRemoteStat('off','리모컨 연결 끊김'); document.getElementById('remoteBtn').classList.remove('remote-on'); } });
+  });
+  peer.on('error', (e)=> setRemoteStat('off','연결 실패: '+e.type));
+}
+function handleRemoteCmd(d){
+  if(!d || !d.cmd) return;
+  if(d.cmd==='next')       goSlide(currentSlide+1);
+  else if(d.cmd==='prev')  goSlide(currentSlide-1);
+  else if(d.cmd==='first') goSlide(0);
+  else if(d.cmd==='toggleCover') (coverVisible ? coverHide() : coverShow());
+}
+function makeState(){
+  const s = scripts[currentSlide], nx = scripts[currentSlide+1];
+  const diff = startTs ? Math.floor((Date.now()-startTs)/1000) : 0;
+  const rem = TARGET_SEC - diff, ar = Math.abs(rem);
+  return { type:'state', idx:currentSlide, total:scripts.length,
+           label:s.label, title:s.title, nextTitle: nx ? nx.title : '— 발표 끝 —',
+           remain:`${rem<0?'-':''}${String(Math.floor(ar/60)).padStart(2,'0')}:${String(ar%60).padStart(2,'0')}`,
+           over: rem<0, covered: coverVisible };
+}
+function broadcastState(){ const st = makeState(); remotes.forEach(c=>{ if(c.open) c.send(st); }); }
+function sendState(conn){ if(conn.open) conn.send(makeState()); }
+function setRemoteStat(kind, text){ const el=document.getElementById('rpStat'); el.className='rp-stat '+kind; el.innerText=text; }
+function renderQR(url){
+  const box = document.getElementById('qrbox'); box.innerHTML='';
+  try{ new QRCode(box, { text:url, width:200, height:200, colorDark:'#000', colorLight:'#fff' }); }
+  catch(e){ box.innerHTML = '<a href="'+url+'" style="font-size:11px;word-break:break-all;color:#000;padding:8px;">'+url+'</a>'; }
+}
+
 /* ===== 썸네일이 늦게 로드되면 현재 슬라이드로 재정렬 ===== */
 document.getElementById('slideFrame').addEventListener('load', ()=>{
   setTimeout(()=> postToReveal(document.getElementById('slideFrame').contentWindow, currentSlide), 600);
@@ -323,6 +404,8 @@ setInterval(()=>{
   const pct = Math.min(100, (slideElapsed/rec)*100);
   document.getElementById('paceFill').style.width = pct + '%';
   document.getElementById('paceBar').classList.toggle('is-over', slideElapsed > rec);
+
+  if(remotes.length && typeof broadcastState === 'function') broadcastState();   // 폰 타이머 라이브 갱신
 }, 1000);
 
 /* ===== 로드 시 확장 디스플레이 감지 (권한 불필요) ===== */

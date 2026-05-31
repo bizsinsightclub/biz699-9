@@ -69,6 +69,21 @@
 
 > 모니터 자동 감지·배치는 **Window Management API**(Chrome/Edge 110+) 사용. 미지원/거부 시 일반 창으로 열리며 수동 드래그 + `F`.
 
+### 📱 핸드폰 리모컨 (WebRTC, 서버 없음)
+
+핸드폰을 무선 리모컨으로 — 걸어다니며 슬라이드를 넘긴다. 프롬프터의 **`📱 리모컨`** 버튼 → QR 표시 → 폰 카메라로 스캔 → 즉시 연결(PeerJS P2P).
+
+<table>
+  <tr>
+    <td width="38%"><img src="./screenshots/remote-phone.png" alt="Phone remote"/><br/><sub><b>폰 리모컨</b> · 이전/다음 · 현재 슬라이드 · 남은 시간 · 가림</sub></td>
+    <td width="62%"><img src="./screenshots/prompter-remote-qr.png" alt="Prompter QR"/><br/><sub><b>프롬프터 QR 패널</b> · 스캔 한 번으로 페어링</sub></td>
+  </tr>
+</table>
+
+- 폰 버튼: **이전 / 다음**(큰 탭 영역) · **가림/시작** 토글 · **처음으로**. 현재 슬라이드 번호·라벨·다음 제목·남은 시간이 실시간 표시.
+- 폰 → 프롬프터 → 썸네일·프로젝터가 **한 번에** 이동. 폰의 볼륨/방향키(블루투스 클리커)도 인식.
+- 서버·계정 불필요(PeerJS 공개 브로커). **가장 확실한 연결: 노트북·폰을 같은 핫스팟에** 두면 거의 항상 붙는다(제한적 강연장 wifi 대비).
+
 ---
 
 ## 📄 PDF 변환
@@ -116,7 +131,8 @@ npm run pdf        # → output/slides.pdf (35p, 1440×810pt = 16:9)
 ```
 output/
 ├── index.html         # Reveal.js 진입점 (35 <section> + 발표자 노트)
-├── prompter.html      # 발표자 텔레프롬프터 (슬라이드 동기화 · 듀얼 스크린)
+├── prompter.html      # 발표자 텔레프롬프터 (슬라이드 동기화 · 듀얼 스크린 · 리모컨 호스트)
+├── remote.html        # 핸드폰 무선 리모컨 (WebRTC P2P)
 ├── README.md          # 이 문서
 ├── css/               # tokens · base · templates · components · print
 ├── js/config.js       # Reveal.js v5 초기화 (transition: none, 1920×1080)
