@@ -1,178 +1,128 @@
-# 9조 발표자료 (v2.0) — 실행 가이드
+# AI 친화적 데이터셋과 기업 지능화 전략
 
-> **AI 친화적 데이터셋과 기업 지능화 전략 — 지식 액체화를 통한 의사결정 품질의 구조적 향상**
-> KAIST Professional MBA · BIZ699 · 9조
-> 33 슬라이드 · 다크 모드 · Reveal.js v5
+> **지식 액체화(Knowledge Liquefaction)를 통한 의사결정 품질의 구조적 향상**
+> KAIST Professional MBA · BIZ699 · **9조** · 2026
+> 다크 모드 · **35 슬라이드** · Reveal.js v5 (정적 HTML/CSS/JS, 빌드 도구 없음)
+
+![Title](./screenshots/title.png)
 
 ---
 
-## 1. 발표자료 실행
+## 🔗 라이브
 
-1. 본 디렉토리(`output/`)의 `index.html` 을 **Chrome** 또는 **Edge**로 연다.
-2. `F` 키로 풀스크린 진입.
-3. `→` / `←` 키로 슬라이드 전환.
-4. `S` 키로 발표자 노트 창 (별도 창에 노트 + 다음 슬라이드 미리보기).
-5. `O` 또는 `ESC` 로 개요 모드.
-
-### 키보드 조작
-
-| 키 | 동작 |
+| | 주소 |
 |---|---|
-| `→` / `Space` / `PageDown` | 다음 슬라이드 |
-| `←` / `PageUp` | 이전 슬라이드 |
-| `F` | 풀스크린 토글 |
-| `S` | 발표자 노트 창 열기 |
-| `O` 또는 `ESC` | 개요(Overview) 모드 |
-| `B` 또는 `.` | 화면 블랙아웃 |
-| `?` | 단축키 도움말 |
+| **발표 슬라이드** | https://bizsinsightclub.github.io/biz699-9/ |
+| **발표자 텔레프롬프터** | https://bizsinsightclub.github.io/biz699-9/prompter.html |
+
+> 핵심 명제 — **AI 도입 성과를 결정하는 것은 모델이 아닌, 조직 지식의 구조화 수준이다.**
+> 3단계 프레임워크: **진단(Diagnose) → 액체화(Liquefy) → 연결(Connect)**
 
 ---
 
-## 2. PDF 변환
+## 🖼 미리보기
 
-### Chrome 권장 절차
-
-1. Chrome 주소창에 다음 URL 입력 (절대 경로 + `?print-pdf`):
-   ```
-   file:///C:/pjt/biz699-9jo/output/index.html?print-pdf
-   ```
-2. 페이지 로드 후 `Ctrl + P` (Cmd+P).
-3. 인쇄 다이얼로그 설정:
-   - **대상**: PDF로 저장
-   - **레이아웃**: 가로 (Landscape)
-   - **용지 크기**: A4 또는 Letter
-   - **여백**: **없음** (필수)
-   - **고급 → 배경 그래픽**: **반드시 활성화** (다크 배경·카드·gradient 보존)
-   - **머리글 및 바닥글**: 비활성화
-4. "저장" → `slides.pdf` 로 저장 (권장 위치: `output/slides.pdf`).
-
-### PDF 검수 체크리스트
-
-- [ ] 33 슬라이드 = 33 페이지 (1:1 매핑)
-- [ ] 다크 배경(`#0E0E0E`) 보존
-- [ ] Part II (S6~S15) 의 amber accent (`#F97316`) 보존
-- [ ] 한글이 Pretendard 로 렌더링됨
-- [ ] 페이지 번호 형식 `XX / 33`
-- [ ] PDF 파일 크기 5MB 이하
-
-> 다크 배경이 빠지면 99% "배경 그래픽" 옵션 미활성화. 인쇄 다이얼로그 → 고급 → 활성화.
+<table>
+  <tr>
+    <td width="50%"><img src="./screenshots/jcurve.png" alt="Cold Start J-curve"/><br/><sub><b>Cold Start — J-curve</b> · 임계점 이전은 비용, 이후는 가속</sub></td>
+    <td width="50%"><img src="./screenshots/failure.png" alt="Failure Asymmetry 3x"/><br/><sub><b>Failure Asymmetry</b> · 실패 데이터의 학습 효율 3배</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="./screenshots/architecture.png" alt="4-layer architecture"/><br/><sub><b>연결 아키텍처</b> · 서가 → 사서 → 분석가 → 보고서</sub></td>
+    <td width="50%"><img src="./screenshots/beforeafter.png" alt="Before / After"/><br/><sub><b>Before / After</b> · 개인 역량 의존 → 조직 학습 누적</sub></td>
+  </tr>
+</table>
 
 ---
 
-## 3. 자동 PDF 생성 (선택)
+## ▶ 발표 실행 (로컬)
 
-### 옵션 A. decktape
+1. `index.html` 을 **Chrome** 또는 **Edge** 로 연다.
+2. `F` — 풀스크린 · `→ / ←` — 슬라이드 전환 · `S` — 발표자 노트 창 · `O / ESC` — 개요.
 
+| 키 | 동작 | 키 | 동작 |
+|---|---|---|---|
+| `→` `Space` `PageDown` | 다음 | `F` | 풀스크린 |
+| `←` `PageUp` | 이전 | `S` | 발표자 노트 창 |
+| `O` `ESC` | 개요 모드 | `B` `.` | 화면 블랙아웃 |
+
+---
+
+## 🎤 발표자 텔레프롬프터 (`prompter.html`)
+
+발표자 노트북에 띄우는 대형 대본 화면. **슬라이드 썸네일이 라이브로 동기화**되고, **프로젝터에 슬라이드를 자동 배치**하며, 세팅 중엔 **시작 가림막**으로 대본을 가린다.
+
+<table>
+  <tr>
+    <td width="50%"><img src="./screenshots/prompter-standby.png" alt="Prompter standby"/><br/><sub><b>STANDBY</b> · 시작 전 대본을 가리는 스탠바이 화면</sub></td>
+    <td width="50%"><img src="./screenshots/prompter-live.png" alt="Prompter live"/><br/><sub><b>LIVE</b> · 대형 대본 + 썸네일 + 페이스 타이머</sub></td>
+  </tr>
+</table>
+
+**강연장 듀얼 스크린 — 30초 세팅**
+1. `Win` + `P` → **확장(Extend)** (프롬프터 헤더가 `확장 ✓` 녹색이면 정상)
+2. **연단 모니터**에서 `prompter.html` 열기 (대본은 자동으로 가려진 스탠바이 상태)
+3. 헤더 **`프로젝터에 슬라이드 띄우기`** → 슬라이드가 프로젝터 화면 전체에 자동 배치
+4. 발표 직전 **`▶ 발표 시작`** → 대본 노출 + 타이머 시작 + (안 열렸으면) 프로젝터 슬라이드 자동 켜짐
+5. 이후 조작은 **프롬프터에서만** (`← →` / Space / 클릭) — 썸네일·프로젝터가 함께 이동
+6. 발표 중 누가 다가오면 **`Esc`** → 즉시 재가림
+
+> 모니터 자동 감지·배치는 **Window Management API**(Chrome/Edge 110+) 사용. 미지원/거부 시 일반 창으로 열리며 수동 드래그 + `F`.
+
+---
+
+## 📄 PDF 변환
+
+**A. 자동 (권장)** — Playwright + 시스템 Edge, 1920×1080 비율 보존:
 ```bash
-npm install -g decktape
-decktape reveal "file:///$(pwd)/output/index.html?print-pdf" output/slides.pdf \
-  --size=1920x1080 \
-  --pause=300
+npm install        # 최초 1회 (Chromium 다운로드 없음)
+npm run pdf        # → output/slides.pdf (35p, 1440×810pt = 16:9)
 ```
 
-### 옵션 B. Playwright
+**B. 수동 (브라우저 인쇄)** — 주소창에 `index.html?print-pdf` → `Ctrl/Cmd + P`:
+- 대상 **PDF로 저장** · 레이아웃 **가로** · 여백 **없음** · **배경 그래픽 켜기**(필수) · 머리글/바닥글 끄기.
 
-```bash
-npm i -D playwright
-npx playwright install chromium
-```
-
-```javascript
-// scripts/build-pdf.mjs
-import { chromium } from 'playwright';
-import { resolve } from 'path';
-import { pathToFileURL } from 'url';
-
-const url = pathToFileURL(resolve('output/index.html')).href + '?print-pdf';
-const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-await page.goto(url, { waitUntil: 'networkidle' });
-await page.waitForTimeout(800);
-await page.pdf({
-  path: 'output/slides.pdf',
-  width: '1920px',
-  height: '1080px',
-  printBackground: true,
-  margin: { top: 0, right: 0, bottom: 0, left: 0 }
-});
-await browser.close();
-```
+> 다크 배경이 빠지면 99% "배경 그래픽" 미체크. 변환 로직·함정은 `HOWTO_reveal-to-pdf.md` 참조.
 
 ---
 
-## 4. 디렉토리 구조
+## 🎨 디자인 시스템 요약
+
+- **다크 모드** — 배경 `#0E0E0E`, 텍스트 `#FFFFFF`, 슬라이드당 accent 1색
+- **Accent** — 기본 **purple** `#A855F7`, Part II(반박, S6~S15) **amber** `#F97316`
+- **타이포** — Pretendard(한글) + Inter(영문). display 160 / title 80 / section 56 / body 28
+- **레이아웃** — TitleSlide · SectionDivider · SplitProfile(Pillar) · AgendaList · WorkflowSteps · ComparisonBeforeAfter · BigNumber · Quote · DataChart 외
+- 단일 진실 공급원: `../design.md`
+
+---
+
+## 🧭 발표 흐름 (35 슬라이드 · 18분 목표)
+
+| Part | 내용 | 슬라이드 |
+|---|---|---|
+| **I** | 문제 재정의 (성능 상한선 = 데이터 구조화) | S1–S5 |
+| **II** ★ | 정중한 반박 — 5 Pillars (Cold Start · Survivorship · **Failure Asymmetry** · Capture · Selective) | S6–S15 |
+| **III** | 진단 — 3축 · 친화도 매트릭스 · 우선순위 큐 | S16–S19 |
+| **IV** | 액체화 — Solid→Liquid · 변환 대상 · 파이프라인 | S20–S24 |
+| **V** | 연결 — 4-layer 아키텍처 · 차별 포인트 · 시나리오 · 누적 효과 · Before/After | S25–S30 |
+| **VI** | 결론 — 기여 · 한계와 비용 · 5 Takeaways · "What gets liquefied, gets learned." | S31–S35 |
+
+> 각 페이지 footer는 `XX / 35`. Part II 반박이 본 발표의 핵심 차별점.
+
+---
+
+## 📁 디렉토리
 
 ```
 output/
-├── index.html              # Reveal.js 진입점, 33 <section>
-├── README.md               # 이 파일
-├── css/
-│   ├── tokens.css          # design_ref.md §2~§4 토큰 정의
-│   ├── base.css            # 슬라이드 공통, R-1 · R-2 준수
-│   ├── templates.css       # 10 레이아웃 + 본 발표 특화 4종
-│   ├── components.css      # Card · Eyebrow · NumberBadge · J-curve SVG 등
-│   └── print.css           # PDF 변환 전용
-├── js/
-│   └── config.js           # Reveal.js v5 초기화
-└── slides.pdf              # (수동 또는 자동 생성)
+├── index.html         # Reveal.js 진입점 (35 <section> + 발표자 노트)
+├── prompter.html      # 발표자 텔레프롬프터 (슬라이드 동기화 · 듀얼 스크린)
+├── README.md          # 이 문서
+├── css/               # tokens · base · templates · components · print
+├── js/config.js       # Reveal.js v5 초기화 (transition: none, 1920×1080)
+└── screenshots/       # README 미리보기 이미지
 ```
 
 ---
 
-## 5. 디자인 시스템 요약
-
-- **다크 모드**: 배경 `#0E0E0E`, 텍스트 `#FFFFFF`
-- **타이포그래피**: Pretendard (한글) + Inter (영문). display 160 / title 80 / section 56 / body 28
-- **Accent 색**:
-  - 기본 (Part I, III, IV, V, VI): **purple** `#A855F7`
-  - Part II 반박 슬라이드 (S6~S15): **amber** `#F97316`
-- **레이아웃 10종 + 특화 4종**: design_ref.md §6 + 본 발표 PillarCard / RebuttalCallout / LimitsTriple / TakeawayList
-
-> 디자인 결정 단일 진실 공급원: `../design.md` (= `../design_ref.md` 채택 + 본 발표 특화).
-
----
-
-## 6. 발표 흐름 (33 슬라이드, 18분 목표)
-
-| Part | 슬라이드 | 시간 합계 |
-|---|---|---|
-| I — 문제 재정의 | S1~S5 (5장) | ~3분 |
-| II — 정중한 반박 ★ | S6~S15 (10장) | ~7분 |
-| III — 진단 | S16~S19 (4장) | ~2분 |
-| IV — 액체화 | S20~S24 (5장) | ~3분 |
-| V — 연결 | S25~S28 (4장) | ~2분 |
-| VI — 결론 | S29~S33 (5장) | ~2분 |
-| **합계** | **33 슬라이드** | **약 18~22분** |
-
-> Section Divider 6장과 Hook(S3) 을 짧게(10~15초) 운영 시 18분 가능.
-
----
-
-## 7. 트러블슈팅
-
-| 증상 | 원인 | 해결 |
-|---|---|---|
-| 슬라이드가 안 바뀜 | (R-1 위반 가능) — base.css 의 `section.future/.past/.present` transform `!important` 오버라이드 확인 | base.css 에 해당 룰이 0건이어야 함. 있으면 제거. |
-| 슬라이드 외곽에 그라데이션 | Reveal.js 기본 viewport 그라데이션 노출 (R-2 위반) | base.css 최상단 `html, body, .reveal-viewport, .reveal { background: var(--color-bg-main) !important; }` 확인 |
-| 한글이 네모 박스 | Pretendard CDN 로드 실패 | 인터넷 연결 확인. 오프라인 시 시스템 Malgun Gothic 로 fallback |
-| PDF 액센트 색이 안 나옴 | "배경 그래픽" 미활성화 | 인쇄 옵션 → 고급 → 배경 그래픽 체크 |
-| PDF 한 슬라이드 두 페이지 | 여백 설정 오류 | 인쇄 옵션 → 여백 "없음" |
-| `S` 키로 노트 안 열림 | 팝업 차단 | 브라우저 팝업 허용 |
-
----
-
-## 8. 메타 거버넌스
-
-본 발표자료는 다음 4 파일을 단일 진실 공급원으로 운영:
-
-- `../CLAUDE.md` — 마스터 지시서 (구조·룰·실행 명령)
-- `../design.md` — 디자인 시스템 (= design_ref.md 채택 + 본 발표 특화)
-- `../lesson_learned.md` — 사용자 피드백·실수 누적 기록
-- `../todo.md` — 진행 트래킹
-
-작업 변경 시 위 4 파일을 모두 갱신한다 (Rule R-5).
-
----
-
-*v2.0 / 2026-05-03 / 9조*
-*v1.0 (16-slide 화이트 미니멀) 폐기 — 사유: lesson_learned.md 참조*
+*9조 · BIZ699 · v2.0 (35-slide 다크 모드) · 2026*
