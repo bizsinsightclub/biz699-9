@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9조 텔레프롬프터 · BIZ699 — 지식 액체화</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+KR:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#000; --text:#fff; --dim:#555; --border:#1d1d1d;
+    --accent:#F97316;          /* 발표 톤 = amber 시그널 (반박 파트 색) */
+    --warn:#F97316; --over:#ff3b30;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter','Noto Sans KR',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* === 상단 바 === */
+  header{padding:18px 36px;background:#000;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+  .time-box{display:flex;gap:36px;font-size:13px;letter-spacing:0.1em;color:var(--dim);}
+  .time-box b{color:#fff;margin-left:8px;font-variant-numeric:tabular-nums;}
+  .time-box b#remain{color:var(--accent);}
+  .time-box.is-over b#remain{color:var(--over);}
+  .head-right{display:flex;gap:14px;align-items:center;}
+  .deck-btn{background:var(--accent);color:#000;border:none;padding:8px 16px;font-size:12px;font-weight:900;letter-spacing:0.05em;cursor:pointer;}
+  .deck-btn.linked{background:#0a0;color:#fff;}
+  .status-tag{font-size:11px;font-weight:900;color:#fff;border:1px solid var(--border);padding:5px 10px;letter-spacing:0.2em;}
+
+  #main{flex:1;display:flex;min-height:0;}
+
+  /* === 좌측 사이드바 === */
+  #sidebar{width:320px;background:#000;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px;flex-shrink:0;}
+  .thumb-container{width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;border:1px solid var(--border);background:#0E0E0E;}
+  iframe{width:1920px;height:1080px;transform:scale(0.1333);transform-origin:top left;border:none;pointer-events:none;}
+  .slide-meta{margin-top:26px;}
+  .slide-num{font-size:44px;font-weight:900;letter-spacing:-0.05em;color:#fff;line-height:1;}
+  .slide-num .total{font-size:20px;color:var(--dim);font-weight:700;}
+  .slide-label{font-size:12px;color:var(--accent);text-transform:uppercase;margin-top:12px;letter-spacing:0.12em;font-weight:700;}
+  .slide-title{font-size:17px;color:#fff;font-weight:700;margin-top:4px;line-height:1.4;word-break:keep-all;}
+  .slide-sec{margin-top:18px;font-size:12px;color:var(--dim);letter-spacing:0.1em;}
+  .slide-sec b{color:#fff;font-variant-numeric:tabular-nums;}
+  .pace{margin-top:8px;height:4px;background:#161616;overflow:hidden;}
+  .pace > i{display:block;height:100%;width:0;background:var(--accent);transition:width 1s linear;}
+  .pace.is-over > i{background:var(--over);}
+  .mini-list{margin-top:auto;font-size:11px;color:var(--dim);line-height:1.9;border-top:1px solid var(--border);padding-top:14px;}
+  .mini-list b{color:#888;}
+
+  /* === 우측 스크립트 === */
+  #script-area{flex:1;padding:70px 90px;overflow-y:auto;cursor:pointer;background:#000;position:relative;}
+
+  /* === 시작 가림막 (대본 노출 방지) === */
+  #cover{position:absolute;inset:0;background:#000;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:opacity .25s ease;}
+  #cover.hidden{opacity:0;pointer-events:none;visibility:hidden;}
+  #cover .cv-eyebrow{font-size:14px;letter-spacing:0.25em;color:var(--dim);text-transform:uppercase;font-weight:700;}
+  #cover .cv-title{font-size:40px;font-weight:900;color:#fff;margin-top:18px;line-height:1.3;word-break:keep-all;max-width:760px;}
+  #cover .cv-team{font-size:15px;color:var(--dim);margin-top:14px;letter-spacing:0.05em;}
+  #cover .cv-clock{font-size:64px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;margin-top:40px;letter-spacing:-0.02em;}
+  #cover .cv-btn{margin-top:40px;background:var(--accent);color:#000;border:none;padding:18px 44px;font-size:20px;font-weight:900;letter-spacing:0.04em;cursor:pointer;}
+  #cover .cv-hint{margin-top:20px;font-size:13px;color:var(--dim);letter-spacing:0.08em;}
+  .script-content{font-size:42px;font-weight:400;line-height:1.7;word-break:keep-all;color:#fff;}
+  .script-content b{color:#fff;font-weight:900;text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:8px;text-decoration-thickness:3px;}
+
+  /* === 하단 내비 === */
+  .nav-guide{position:fixed;bottom:26px;right:36px;display:flex;gap:10px;}
+  .nav-btn{background:#000;color:#fff;border:1px solid var(--border);padding:11px 22px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.05em;}
+  .nav-btn:hover{background:#fff;color:#000;}
+  .hint{position:fixed;bottom:30px;left:360px;font-size:11px;color:var(--dim);letter-spacing:0.08em;}
+  ::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-thumb{background:#222;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="time-box">
+    <div>CLOCK<b id="clock">00:00:00</b></div>
+    <div>RUNNING<b id="elapsed">00:00:00</b></div>
+    <div>남은 시간<b id="remain">18:00</b></div>
+  </div>
+  <div class="head-right">
+    <div class="status-tag" id="screenTag" title="감지된 디스플레이">화면 ?</div>
+    <div class="status-tag" id="statusTag">STANDBY</div>
+    <button class="deck-btn" id="coverBtn" onclick="coverShow()" style="background:#000;color:#fff;border:1px solid var(--border);">가림 (Esc)</button>
+    <button class="deck-btn" id="deckBtn" onclick="toggleDeck()">프로젝터에 슬라이드 띄우기</button>
+  </div>
+</header>
+
+<div id="main">
+  <div id="sidebar">
+    <div class="thumb-container">
+      <iframe id="slideFrame" src="index.html"></iframe>
+    </div>
+    <div class="slide-meta">
+      <div class="slide-num"><span id="s-num">01</span><span class="total"> / 35</span></div>
+      <div class="slide-label" id="s-label">TITLE</div>
+      <div class="slide-title" id="s-title">—</div>
+    </div>
+    <div class="slide-sec">권장 <b id="s-sec">30</b>초 · 경과 <b id="s-elapsed">0</b>초</div>
+    <div class="pace" id="paceBar"><i id="paceFill"></i></div>
+    <div class="mini-list">
+      <div><b>① 이 창</b>은 연단 모니터에 둔다</div>
+      <div><b>② 프로젝터에 슬라이드 띄우기</b> 클릭</div>
+      <div><b>③</b> 뜬 슬라이드 창에서 <b>F</b> = 풀스크린</div>
+      <div style="margin-top:8px;"><b>→/Space</b> 다음 · <b>←</b> 이전 · <b>클릭</b> 좌/우</div>
+    </div>
+  </div>
+
+  <div id="script-area">
+    <div id="text-view" class="script-content"></div>
+    <div id="cover" onclick="coverHide()">
+      <div class="cv-eyebrow">9조 · BIZ699 — STANDBY</div>
+      <div class="cv-title">AI 친화적 데이터셋과<br>기업 지능화 전략</div>
+      <div class="cv-team">발표 김민석 · 9조</div>
+      <div class="cv-clock" id="cv-clock">00:00:00</div>
+      <button class="cv-btn" onclick="event.stopPropagation(); coverHide();">▶ 발표 시작</button>
+      <div class="cv-hint">클릭 · Space · Enter 로 시작 — 프로젝터에 슬라이드도 함께 켜집니다 &nbsp;|&nbsp; 발표 중 Esc 로 다시 가림</div>
+    </div>
+  </div>
+</div>
+
+<div class="hint" id="modeHint">THUMBNAIL SYNC — 발표 창을 열면 그 창도 함께 넘어갑니다</div>
+<div class="nav-guide">
+  <button class="nav-btn" onclick="goSlide(currentSlide-1)">◀ PREV</button>
+  <button class="nav-btn" onclick="goSlide(currentSlide+1)">NEXT ▶</button>
+</div>
+
+<script>
+/* =======================================================================
+   9조 BIZ699 텔레프롬프터
+   - 스크립트 톤: 블랙코미디 시니컬 (주제·논리는 정확, 교수 피드백은 정중)
+   - Reveal.js 동기화: JSON.stringify({method:'slide',args:[idx]}) 형식 필수
+   ======================================================================= */
+const scripts = [
+ {label:"TITLE", title:"타이틀", sec:30, text:"안녕하세요. BIZ699 9조 김민석입니다. 오늘 주제는 <b>AI 친화적 데이터셋과 기업 지능화 전략</b> — 한 문장으로 줄이면, '비싼 AI를 똑같이 사놓고 왜 우리 회사만 효과가 없는가'에 대한 이야기입니다. 결론부터 말씀드리면, 문제는 모델이 아니라 <b>모델에게 먹이는 데이터</b>였습니다. 장활훈, 최순영, 진현선, 성철한, 이창호, 김원진 학우와 함께 준비했습니다."},
+ {label:"PART 01", title:"문제 재정의", sec:15, text:"먼저 문제부터 다시 정의하겠습니다. 다들 'AI가 답'이라고 하는데 — 그 전에, 우리가 던진 질문 자체가 틀렸을 가능성을 먼저 보겠습니다."},
+ {label:"HOOK", title:"같은 모델, 다른 결과", sec:60, text:"같은 모델, 같은 예산. 그런데 결과는 다릅니다. BCG가 전 세계 1,000여 개 기업을 조사했더니, 상위 5%는 후행 기업 대비 <b>매출 2배, 비용 40% 절감</b>을 달성했고, <b>60%는 측정 가능한 효과가 전혀 없다</b>고 답했습니다. 같은 ChatGPT를 쓰는데 60%가 빈손입니다. 격차의 원인은 모델도 예산도 아니었습니다 — <b>조직 데이터의 구조화 수준</b>이었습니다."},
+ {label:"CLAIM", title:"성능 상한선 = 구조화 수준", sec:50, text:"핵심 명제는 이겁니다 — <b>AI가 읽을 수 없는 지식은, 존재하지 않는 지식입니다.</b> 데이터 구조화 수준이 곧 성능의 상한선입니다. 모델을 다음 세대로 바꿔도, 먹이가 PPT 더미라면 상한선은 그대로 바닥에 붙어 있습니다."},
+ {label:"QUESTION", title:"연구 질문 + 3단계", sec:60, text:"그래서 저희 질문은 단순합니다 — <b>어떤 조건을 갖춘 데이터셋이 AI 친화적인가.</b> 저희는 세 축으로 봤습니다. 구조적 명확성, 맥락 보존, 검색 가능성. 그리고 이걸 실행으로 옮기는 3단계 — <b>진단, 액체화, 연결</b>. 오늘 발표는 정확히 이 순서대로 갑니다."},
+ {label:"PART 02", title:"받은 피드백", sec:15, text:"그런데 발표를 준비하면서, 저희 주장을 정면으로 겨누는 아주 좋은 피드백을 하나 받았습니다. 오늘 발표에서 가장 중요한 부분입니다."},
+ {label:"FEEDBACK", title:"피드백과 우리 입장", sec:60, text:"피드백은 이랬습니다 — <b>'과거의 암묵지까지 굳이 데이터화할 필요가 있나, 앞으로 생기는 데이터만 잘 정리하면 되지 않나.'</b> 정말 좋은 질문입니다. 학문적으로 깔끔하고, 직관적으로 설득력 있습니다. 그래서 저희도 원점에서 다시 생각했습니다. 내린 결론은 — <b>방향에는 동의하지만, '미래만'이라는 결론은 받아들이지 않습니다.</b> 이유를 네 가지 관점으로 말씀드리겠습니다."},
+ {label:"PREVIEW", title:"4가지 관점", sec:30, text:"네 가지입니다. 첫째 <b>Cold Start</b> — 미래 데이터만으론 임계점까지 너무 오래 걸립니다. 둘째 <b>Survivorship Bias</b> — '지금'이라는 기준 자체가 과거의 누적입니다. 셋째 <b>Failure Asymmetry</b> — 가장 비싼 데이터인 실패는 과거에만 있습니다. 넷째 <b>Capture Capability</b> — 과거를 못 다루는 역량은 미래도 못 다룹니다. 그리고 마지막에, 저희가 양보하는 지점 하나 — 선택적 액체화."},
+ {label:"PILLAR 01", title:"Cold Start Paradox", sec:60, text:"첫째, Cold Start Paradox. AI 효용은 데이터가 임계량을 넘기 전까지 사실상 <b>음수</b>입니다. 코퍼스 — AI가 학습하고 검색하는 데이터 더미 — 가 충분히 쌓이기 전엔 쓸 만한 패턴이 안 나옵니다. Wharton 조사로는 만족할 ROI까지 평균 <b>2~3년</b>. 그동안 직원들은 McKinsey 기준 업무시간의 <b>19%</b>를 '그 자료 어디 있더라'에 씁니다. '미래만'은 이 2~3년을 처음부터 다시 시작하자는 뜻입니다."},
+ {label:"MECHANISM", title:"J-curve", sec:60, text:"그림으로 보면 이렇습니다. 도입 초기는 비용 영역 — 깊은 음수 구간입니다. 임계점을 넘어야 비로소 가속 영역으로 올라갑니다. 이 음수 구간을 단축하는 가장 확실한 방법이 뭐냐 — <b>과거 데이터를 시드로 미리 부어주는 것</b>입니다. 시드가 없으면 곡선은 그냥 바닥에서 더 오래 깁니다."},
+ {label:"PILLAR 02", title:"Survivorship Bias of Now", sec:60, text:"둘째, '지금'이라는 착시입니다. 우리가 '현재의 의사결정 기준'이라 부르는 건 매뉴얼이 아니라 <b>수십 년 쌓인 결정의 산물</b>입니다. 어제의 실패가 오늘의 규정이 되고, 작년의 성공이 올해의 베스트 프랙티스가 됩니다. Argyris와 Schön의 이중 루프 학습 — 조직은 '기존 가정을 재해석'하며 배웁니다. 재해석할 과거가 없으면 학습은 얕은 단일 루프에 갇힙니다. 신입에게 '오늘부터 알아서 배워'라고 하지 않는 것과 같은 이유로, AI에게도 과거가 필요합니다."},
+ {label:"PILLAR 03 ★", title:"Failure Asymmetry — 3×", sec:60, text:"셋째, 이게 가장 중요합니다. 가장 비싼 데이터는 성공이 아니라 <b>실패</b>입니다. Sitkin 연구로는 실패의 학습 효율이 성공의 <b>약 3배</b>. 그런데 결정적으로 — <b>실패는 본질적으로 과거에만 쌓여 있습니다.</b> 조직이 정상이라면 같은 실패는 반복하지 않으니까요. 즉 미래엔 '같은 실패'가 잘 안 생깁니다. 과거를 버리는 건, 가장 비싼 자산을 통째로 버리는 겁니다."},
+ {label:"DETAIL", title:"성공 vs 실패 비교", sec:60, text:"표로 보면 비대칭이 분명합니다. 성공은 미래에도 계속 생기고 점진적으로 쌓입니다. 실패는 과거에 몰려 있고, 같은 건 반복되지 않습니다. 학습 효율은 3배인데, 'Future-only' 전략에서는 이 자산을 <b>구조적으로 확보할 방법이 없습니다.</b> 미래만 보겠다는 건, 가장 잘 배울 수 있는 교재를 안 펴보겠다는 뜻입니다."},
+ {label:"PILLAR 04", title:"Capture Capability", sec:60, text:"넷째, 역량의 문제입니다. 데이터를 구조화하는 역량은 <b>시간 방향을 가리지 않습니다.</b> 역량이 있으면 과거도 미래도 액체화됩니다. 없으면 과거도 미래도 똑같이 실패합니다. Standish CHAOS 리포트는 정보 시스템 실패의 <b>70%</b>가 기술이 아니라 프로세스·역량 부재라고 합니다. 그러니 '미래만 하면 된다'는 말은, 뒤집으면 '사실 아무 역량도 준비 안 해도 된다'는 말과 같습니다. 그렇지 않습니다."},
+ {label:"PILLAR 05", title:"Selective Liquefaction", sec:60, text:"다섯째, 그리고 여기서 저희가 한 발 양보합니다. 저희는 <b>'모든 과거를 다 액체화하자'고 주장하지 않습니다.</b> 파레토 — 의사결정의 80%는 반복 패턴 20%에서 나옵니다. 그 20%면 충분합니다. 진짜 질문은 '과거냐 미래냐'가 아니라 <b>'어떤 과거 + 어떤 미래'</b>입니다. 전부 아니면 전무, 이 이분법을 ROI 기준으로 깨자는 겁니다."},
+ {label:"PART 03", title:"진단", sec:15, text:"여기까지가 반박이었습니다. 이제 '그럼 어떻게 하는가'로 넘어갑니다. 첫 단계는 진단입니다."},
+ {label:"STEP 01", title:"진단의 3축", sec:50, text:"진단은 세 축으로 합니다. 구조적 명확성 — 문서에 위계가 있는가. 맥락 보존 — 정보가 단편으로 흩어져 있지 않은가. 검색 가능성 — AI가 의도한 단위로 찾아갈 수 있는가. 우연이 아닙니다. 이 세 축은 LLM의 처리 방식 — <b>파싱, 맥락 윈도우, 검색</b> — 에 정확히 1:1로 대응합니다."},
+ {label:"MATRIX", title:"포맷별 AI 친화도", sec:60, text:"포맷별로 점수를 매겨봤습니다. 최상은 Markdown, 만점입니다. 그 아래 Word, 텍스트 PDF 순입니다. 그리고 다소 불편한 결과 — 여러분이 발표자료로 가장 많이 쓰는 <b>PPT가 거의 최하위</b>입니다. 구조 정보가 텍스트가 아니라 '시각적 위치'에만 있어서, AI 입장에선 읽을 게 없습니다. 스캔 이미지와 음성은 별도 변환 없이는 사실상 0점입니다."},
+ {label:"OUTPUT", title:"우선순위 큐", sec:40, text:"진단의 결과물은 멋진 보고서가 아닙니다. 바로 실행 가능한 <b>우선순위 큐</b>입니다. 자산별로 네 가지를 매깁니다 — AI 친화도 점수, 변환 난이도, 변환 ROI, 변환 시점. 분기마다 갱신합니다. 보고서는 서랍에 들어가지만, 큐는 다음 주 작업 목록이 됩니다."},
+ {label:"PART 04", title:"액체화", sec:15, text:"두 번째 단계, 액체화입니다. 굳어 있는 지식을 흐르게 만드는 단계입니다."},
+ {label:"STEP 02", title:"Solid → Liquid", sec:50, text:"액체화는 말 그대로 <b>Solid를 Liquid로</b> 바꾸는 겁니다. PPT 안에 갇힌 도해, 디자인 PDF의 위치 정보, 베테랑 머릿속의 클레임 대응 노하우 — 이게 다 Solid입니다. 형태가 굳어서 AI가 흐름을 못 따라갑니다. 표준 변환 포맷은 <b>Markdown</b>입니다. 구조와 텍스트의 조합 — Markdown은 사실상 <b>AI의 모국어</b>입니다."},
+ {label:"TARGETS", title:"변환 대상 3형태", sec:50, text:"변환 대상은 세 종류입니다. 시각 자산 — PPT·도해는 위치를 텍스트 위계로. 암묵지 — 인터뷰·회고는 음성을 받아 사람이 검수해 마크다운으로. 정형 자산 — DB·로그는 스키마를 검색 가능한 청크로. 핵심은 셋을 억지로 합치지 않는 겁니다. 파이프라인은 따로, 출력 포맷만 통일합니다."},
+ {label:"SELECTIVE", title:"우선순위 매트릭스", sec:60, text:"앞서 말한 '선택'을 실제로 어떻게 하느냐 — 2축 매트릭스입니다. 가로는 의사결정 영향도, 세로는 반복 빈도. <b>둘 다 높은 좌상단부터</b> 액체화합니다. 반복 클레임 대응, 핵심 의사결정 패턴이 여기 들어갑니다. 1회성 자료는 그냥 버립니다. 파레토대로, 위 20%만 잡아도 의사결정의 80%를 덮습니다."},
+ {label:"PIPELINE", title:"액체화 5단계", sec:70, text:"실제 파이프라인은 다섯 단계입니다. 원본을 모으고, AI가 읽게 변환하고, 위계로 정리하고, 꼬리표를 달고, 검색 가능하게 저장합니다. 도구도 이미 다 있습니다 — MarkItDown, Pandoc, Whisper. 그런데 진짜 어려운 건 도구가 아닙니다. <b>인센티브</b>입니다. KM 정착 실패의 70%가 인센티브 부재 때문입니다. 그래서 액체화 기여도를 개인 KPI에 박아 넣습니다. 안 그러면 아무도 안 합니다."},
+ {label:"PART 05", title:"연결", sec:15, text:"마지막 단계, 연결입니다. 액체화된 지식이 실제 의사결정으로 흐르는 단계입니다."},
+ {label:"STEP 03", title:"4-layer 아키텍처", sec:60, text:"구조는 4층입니다. 어렵게 들리지만 회사로 비유하면 단순합니다 — <b>서가, 사서, 분석가, 보고서</b>. 1층은 액체화된 지식이 꽂힌 서가. 2층은 질문에 맞는 자료를 찾아오는 사서, 검색 엔진. 3층은 그 자료로 추론하는 분석가, LLM. 4층은 사람에게 전달되는 보고서입니다. RAG, GraphRAG, 최근의 LLM Wiki — 다 이 구조 위의 변주일 뿐입니다."},
+ {label:"OUR EDGE", title:"우리만의 차별 포인트", sec:60, text:"여기서 한 가지 짚겠습니다. RAG든 GraphRAG든, 시중의 모든 패턴은 <b>1층 서가가 이미 차 있다고 가정합니다.</b> 그런데 현실의 서가는 비어 있습니다. 저희 연구의 기여는 바로 그 빈 서가를 채우는 방법론입니다 — 액체화 자체, ROI 기반 선택, 그리고 대부분의 KM이 놓치는 실패 사례의 자산화. 도구는 누구나 삽니다. <b>서가를 채우는 법</b>은 아무도 안 알려줍니다."},
+ {label:"SCENARIO", title:"비교 보고서 시나리오", sec:60, text:"그럼 서가가 차면 뭐가 가능해지냐 — 이런 명령이 됩니다. <b>'이 프로젝트 리스크를 작년 실패 사례 3건과 비교해서, 차이점·공통점·완화 전략 초안을 보고서로 잡아줘.'</b> 이건 단순 검색이 아닙니다. 검색·비교·분석·추론·합성, 다섯 단계가 한 번에 일어납니다. 단, 작년 실패 사례가 액체화돼 있어야만 작동합니다. 서가가 비어 있으면, 이 명령은 그냥 그럴듯한 거짓말을 지어냅니다."},
+ {label:"SCALE", title:"누적 효과 ×1,200", sec:50, text:"그리고 이건 한 번 쓰고 끝이 아닙니다. 한 부서가 월 100건씩만 써도 1년이면 <b>1,200건</b>, 부서를 곱하면 수천 건이 코퍼스에 쌓입니다. 쌓일수록 다음 추론이 더 똑똑해집니다. 학습 곡선이 위로 휩니다. 아까 BCG가 본 'AI 리더와 후행 기업의 격차' — 그게 벌어지는 메커니즘이 정확히 이겁니다. 복리입니다."},
+ {label:"OUTCOME", title:"Before / After", sec:70, text:"정리하면, 의사결정의 토대가 바뀝니다. Before는 담당자의 경험과 기억에 의존합니다 — 그 사람이 퇴사하면 노하우도 같이 퇴사합니다. After는 코퍼스에 영구 보존됩니다. 같은 실수는 자동으로 회수돼 차단되고, 신입 온보딩은 6개월에서 검색 한 번으로 줄어듭니다. 시간 절감과 판단 품질, <b>이중 ROI</b>입니다."},
+ {label:"PART 06", title:"결론", sec:15, text:"이제 마무리하겠습니다. 무엇을 남기고, 무엇이 비용이며, 내일 당장 뭘 할 것인가."},
+ {label:"CONTRIBUTION", title:"세 가지 기여", sec:50, text:"기여는 셋입니다. 개념적으로 — '<b>AI 친화적</b>'이라는 모호한 말을 측정 가능한 3축으로 만들었습니다. 전략적으로 — 데이터 액체화를 AI 전략의 결과가 아니라 <b>선행 조건</b>으로 옮겼습니다. 실증적으로 — 진단·액체화·연결의 실행 로드맵을 제시했습니다. 그리고 핵심 — 전통 KM은 사람이 검색하려고 만든 거지만, 저희는 <b>AI가 추론하려고</b> 만듭니다. 설계 원리가 다릅니다."},
+ {label:"LIMITS", title:"한계와 비용", sec:50, text:"정직하게 한계도 인정하겠습니다. 첫째, 액체화는 공짜가 아닙니다 — 6개월에서 1년, 전담 인력 1~2명. 분기마다 효과가 안 보이면 조직의 인내가 시험받습니다. 둘째, 암묵지는 텍스트로 다 안 담깁니다 — 손이 기억하는 절차, 분위기 판단은 음성·영상 원본을 같이 남기는 수밖에 없습니다. 셋째, 가장 흔한 실패 — 도구가 있어도 기록 문화가 없으면 파이프라인은 텅 빕니다. 이건 기술 문제가 아니라 사람 문제입니다."},
+ {label:"TAKEAWAYS", title:"오늘부터 5가지", sec:40, text:"오늘부터 할 수 있는 다섯 가지로 정리합니다. 하나, 모델 고르기 전에 데이터 진단부터. 둘, 가장 중요한 PPT 더미부터 마크다운으로. 셋, 실패 사례는 따로 모아 별도 코퍼스로 — 3배 비싼 자산이니까요. 넷, 액체화 기여도를 KPI에 연동 — 안 그러면 아무도 안 합니다. 다섯, '전부 아니면 전무' 말고 <b>'어떤 과거 + 어떤 미래'</b>로 시작하세요."},
+ {label:"CLOSING", title:"결론", sec:40, text:"한 문장으로 마치겠습니다 — <b>What gets liquefied, gets learned.</b> 액체화된 것만이 학습됩니다. 기업 지능화의 출발점은 더 비싼 모델이 아니라, 읽을 수 있게 정리된 지식입니다. 과거를 버리지 마십시오 — 가장 비싼 데이터가 거기 있습니다. 이상으로 9조 발표를 마치겠습니다. 감사합니다. 질문 받겠습니다."}
+];
+
+/* ===== 상태 ===== */
+let currentSlide = 0;
+let deckWin = null;                                  // window.open 으로 띄운 실제 발표 창
+const TARGET_SEC = 18 * 60;                          // 발표 목표 18분
+const sync = new BroadcastChannel('biz699_prompter'); // 보조 프롬프터 창 동기화
+let slideEnteredAt = Date.now();
+
+/* ===== 시작 가림막 ===== */
+let coverVisible = true;    // 로드 시 가림 (대본 노출 방지)
+let started = false;        // '발표 시작' 1회 여부
+let startTs = null;         // 발표 시작 시각 (타이머 기준)
+
+function coverShow(){
+  coverVisible = true;
+  document.getElementById('cover').classList.remove('hidden');
+  document.getElementById('statusTag').innerText = started ? 'PAUSED' : 'STANDBY';
+}
+function coverHide(){
+  coverVisible = false;
+  document.getElementById('cover').classList.add('hidden');
+  if(!started){ started = true; startTs = Date.now(); slideEnteredAt = Date.now(); }
+  // 발표 시작 = 프로젝터에 슬라이드 자동 켜짐 (아직 안 열렸을 때만)
+  if(deckWin && !deckWin.closed){
+    document.getElementById('statusTag').innerText = 'LIVE — 프로젝터';
+  } else {
+    toggleDeck();   // 슬라이드 창을 프로젝터에 열고 현재 슬라이드로 동기화 (status 는 toggleDeck 이 설정)
+  }
+}
+
+/* ===== Reveal.js 로 슬라이드 명령 전송 =====
+   Reveal 은 반드시 JSON 문자열 {method, args} 를 받는다. {slide:N} 형식 아님! */
+function postToReveal(win, idx){
+  if(!win) return;
+  try{ win.postMessage(JSON.stringify({method:'slide', args:[idx]}), '*'); }catch(e){}
+}
+
+function goSlide(idx, isExternal=false){
+  if(idx < 0 || idx >= scripts.length) return;
+  currentSlide = idx;
+  slideEnteredAt = Date.now();
+  const s = scripts[idx];
+
+  document.getElementById('s-num').innerText   = String(idx+1).padStart(2,'0');
+  document.getElementById('s-label').innerText = s.label;
+  document.getElementById('s-title').innerText = s.title;
+  document.getElementById('s-sec').innerText   = s.sec;
+  document.getElementById('text-view').innerHTML = s.text;
+  document.getElementById('script-area').scrollTop = 0;
+
+  // 썸네일 iframe + 실제 발표 창 동시 이동
+  postToReveal(document.getElementById('slideFrame').contentWindow, idx);
+  if(deckWin && !deckWin.closed) postToReveal(deckWin, idx);
+
+  if(!isExternal) sync.postMessage({slide: idx});
+}
+
+/* ===== 발표 창 열기/닫기 (멀티스크린 자동 배치) =====
+   연단 모니터(이 창)가 아닌 '다른 화면' = 프로젝터로 판단하고, 그 화면 전체 크기로 deck 을 띄운다.
+   Window Management API(getScreenDetails) 지원 시 자동 배치, 미지원/거부 시 일반 창으로 폴백. */
+async function toggleDeck(){
+  const btn = document.getElementById('deckBtn');
+  const status = document.getElementById('statusTag');
+
+  // 이미 열려 있으면 닫기
+  if(deckWin && !deckWin.closed){
+    deckWin.close(); deckWin = null;
+    btn.classList.remove('linked'); btn.innerText = '프로젝터에 슬라이드 띄우기';
+    status.innerText = 'STANDBY';
+    return;
+  }
+
+  let placed = false, screenInfo = '';
+  try{
+    if('getScreenDetails' in window){
+      const sd = await window.getScreenDetails();              // 권한 프롬프트(최초 1회)
+      const cur = sd.currentScreen;
+      // 현재(연단) 화면과 좌표가 다른 화면 = 프로젝터/TV
+      const target = sd.screens.find(s => s.left !== cur.left || s.top !== cur.top) || cur;
+      document.getElementById('screenTag').innerText = '화면 ' + sd.screens.length;
+      screenInfo = `${sd.screens.length}화면`;
+      const feat = `left=${target.availLeft},top=${target.availTop},width=${target.availWidth},height=${target.availHeight}`;
+      deckWin = window.open('index.html', 'biz699_deck', feat);
+      // 일부 환경에서 새 창을 프로젝터 전체로 재배치 (open feature 무시될 때 보강)
+      try{ deckWin.moveTo(target.availLeft, target.availTop); deckWin.resizeTo(target.availWidth, target.availHeight); }catch(e){}
+      try{ deckWin.focus(); }catch(e){}
+      placed = (target !== cur);
+    }
+  }catch(e){ /* 권한 거부 또는 미지원 → 폴백 */ }
+
+  if(!deckWin){
+    deckWin = window.open('index.html', 'biz699_deck', 'width=1280,height=720');
+  }
+
+  btn.classList.add('linked'); btn.innerText = '발표 창 닫기';
+  status.innerText = placed ? 'LIVE — 프로젝터' : 'LIVE — 창 이동 필요';
+  document.getElementById('modeHint').innerText = placed
+    ? '슬라이드가 프로젝터에 떴습니다 — 그 창에서 F 한 번이면 풀스크린. 조작은 이 프롬프터에서.'
+    : '확장 모드가 아니거나 권한 거부 — 뜬 창을 프로젝터로 드래그한 뒤 F. 조작은 이 프롬프터에서.';
+
+  setTimeout(()=> postToReveal(deckWin, currentSlide), 1500);
+}
+
+/* ===== 클릭 이동 (좌=이전, 우=다음) — 가림 중엔 무시(가림막이 클릭 가로챔) ===== */
+document.getElementById('script-area').onclick = (e)=>{
+  if(coverVisible) return;
+  const sidebarW = 320;
+  if(e.clientX > (window.innerWidth + sidebarW)/2) goSlide(currentSlide+1);
+  else goSlide(currentSlide-1);
+};
+
+/* ===== 키보드 ===== */
+window.onkeydown = (e)=>{
+  if(coverVisible){                                   // 가림 중: 시작만 허용, 네비 차단
+    if(e.key===' ' || e.key==='Enter'){ e.preventDefault(); coverHide(); }
+    return;
+  }
+  if(e.key==='Escape'){ coverShow(); return; }        // 언제든 다시 가림
+  if(e.key==='ArrowRight' || e.key===' ' || e.key==='PageDown'){ e.preventDefault(); goSlide(currentSlide+1); }
+  if(e.key==='ArrowLeft'  || e.key==='PageUp'){ e.preventDefault(); goSlide(currentSlide-1); }
+  if(e.key==='Home') goSlide(0);
+  if(e.key==='End')  goSlide(scripts.length-1);
+};
+
+/* ===== 보조 창 동기화 수신 ===== */
+sync.onmessage = (e)=>{ if(e.data && typeof e.data.slide==='number') goSlide(e.data.slide, true); };
+
+/* ===== 썸네일이 늦게 로드되면 현재 슬라이드로 재정렬 ===== */
+document.getElementById('slideFrame').addEventListener('load', ()=>{
+  setTimeout(()=> postToReveal(document.getElementById('slideFrame').contentWindow, currentSlide), 600);
+});
+
+/* ===== 타이머 — '발표 시작'(가림 해제) 시점부터 가동 ===== */
+function fmt(t){const h=String(Math.floor(t/3600)).padStart(2,'0');const m=String(Math.floor((t%3600)/60)).padStart(2,'0');const s=String(t%60).padStart(2,'0');return `${h}:${m}:${s}`;}
+setInterval(()=>{
+  const now = new Date();
+  const clockStr = now.toTimeString().split(' ')[0];
+  document.getElementById('clock').innerText = clockStr;
+  document.getElementById('cv-clock').innerText = clockStr;     // 가림막 시계(스탠바이 느낌)
+
+  const diff = startTs ? Math.floor((Date.now()-startTs)/1000) : 0;   // 시작 전엔 0
+  document.getElementById('elapsed').innerText = fmt(diff);
+
+  // 남은 시간 (목표 18분 카운트다운)
+  const rem = TARGET_SEC - diff;
+  const box = document.querySelector('.time-box');
+  const sign = rem < 0 ? '-' : '';
+  const ar = Math.abs(rem);
+  document.getElementById('remain').innerText = `${sign}${String(Math.floor(ar/60)).padStart(2,'0')}:${String(ar%60).padStart(2,'0')}`;
+  box.classList.toggle('is-over', rem < 0);
+
+  // 현재 슬라이드 경과 + 권장 시간 페이스 바 (시작 전엔 0)
+  const slideElapsed = started ? Math.floor((Date.now()-slideEnteredAt)/1000) : 0;
+  document.getElementById('s-elapsed').innerText = slideElapsed;
+  const rec = scripts[currentSlide].sec || 60;
+  const pct = Math.min(100, (slideElapsed/rec)*100);
+  document.getElementById('paceFill').style.width = pct + '%';
+  document.getElementById('paceBar').classList.toggle('is-over', slideElapsed > rec);
+}, 1000);
+
+/* ===== 로드 시 확장 디스플레이 감지 (권한 불필요) ===== */
+function detectScreens(){
+  const tag = document.getElementById('screenTag');
+  try{
+    if('isExtended' in window.screen){
+      if(window.screen.isExtended){ tag.innerText = '확장 ✓'; tag.style.borderColor = '#0a0'; }
+      else { tag.innerText = '단일 화면'; tag.style.borderColor = '#F97316'; }
+    } else { tag.innerText = '화면 ?'; }
+  }catch(e){ tag.innerText = '화면 ?'; }
+}
+if('screen' in window && 'addEventListener' in window.screen){
+  try{ window.screen.addEventListener('change', detectScreens); }catch(e){}
+}
+
+window.onload = ()=>{ detectScreens(); goSlide(0); };
+</script>
+</body>
+</html>
