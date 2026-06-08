@@ -12,6 +12,7 @@
     --bg:#000; --text:#fff; --dim:#555; --border:#1d1d1d;
     --accent:#F97316;          /* 발표 톤 = amber 시그널 (반박 파트 색) */
     --warn:#F97316; --over:#ff3b30;
+    --script-fs:42px;          /* 대본 글자 크기 (A−/A+ 로 조절, localStorage 저장) */
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none;}
   body{background:var(--bg);color:var(--text);font-family:'Inter','Noto Sans KR',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
@@ -58,7 +59,7 @@
   #cover .cv-clock{font-size:64px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;margin-top:40px;letter-spacing:-0.02em;}
   #cover .cv-btn{margin-top:40px;background:var(--accent);color:#000;border:none;padding:18px 44px;font-size:20px;font-weight:900;letter-spacing:0.04em;cursor:pointer;}
   #cover .cv-hint{margin-top:20px;font-size:13px;color:var(--dim);letter-spacing:0.08em;}
-  .script-content{font-size:42px;font-weight:400;line-height:1.7;word-break:keep-all;color:#fff;}
+  .script-content{font-size:var(--script-fs);font-weight:400;line-height:1.7;word-break:keep-all;color:#fff;}
   .script-content b{color:#fff;font-weight:900;text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:8px;text-decoration-thickness:3px;}
 
   /* === 하단 내비 === */
@@ -158,7 +159,10 @@
 
 <div class="hint" id="modeHint">THUMBNAIL SYNC — 발표 창을 열면 그 창도 함께 넘어갑니다</div>
 <div class="nav-guide">
-  <button class="nav-btn" onclick="goSlide(currentSlide-1)">◀ PREV</button>
+  <button class="nav-btn" onclick="changeFont(-3)" title="글자 작게 ( - )">A−</button>
+  <span id="fsLabel" style="align-self:center;font-size:11px;color:var(--dim);min-width:38px;text-align:center;font-variant-numeric:tabular-nums;">42px</span>
+  <button class="nav-btn" onclick="changeFont(3)" title="글자 크게 ( + )">A+</button>
+  <button class="nav-btn" onclick="goSlide(currentSlide-1)" style="margin-left:8px;">◀ PREV</button>
   <button class="nav-btn" onclick="goSlide(currentSlide+1)">NEXT ▶</button>
 </div>
 
@@ -322,8 +326,22 @@ document.getElementById('script-area').onclick = (e)=>{
   else goSlide(currentSlide-1);
 };
 
+/* ===== 대본 글자 크기 조절 ===== */
+const FS_MIN = 24, FS_MAX = 88;
+let scriptFs = parseInt(localStorage.getItem('promptFs') || '42', 10);
+function applyFont(){
+  scriptFs = Math.max(FS_MIN, Math.min(FS_MAX, scriptFs));
+  document.documentElement.style.setProperty('--script-fs', scriptFs + 'px');
+  const lbl = document.getElementById('fsLabel'); if(lbl) lbl.innerText = scriptFs + 'px';
+  try{ localStorage.setItem('promptFs', scriptFs); }catch(e){}
+}
+function changeFont(d){ scriptFs += d; applyFont(); }
+
 /* ===== 키보드 ===== */
 window.onkeydown = (e)=>{
+  // 글자 크기: 가림 여부와 무관하게 항상 허용 (+ / = 크게, - / _ 작게)
+  if(e.key==='+' || e.key==='='){ e.preventDefault(); changeFont(3); return; }
+  if(e.key==='-' || e.key==='_'){ e.preventDefault(); changeFont(-3); return; }
   if(coverVisible){                                   // 가림 중: 시작만 허용, 네비 차단
     if(e.key===' ' || e.key==='Enter'){ e.preventDefault(); coverHide(); }
     return;
@@ -461,7 +479,7 @@ if('screen' in window && 'addEventListener' in window.screen){
   try{ window.screen.addEventListener('change', detectScreens); }catch(e){}
 }
 
-window.onload = ()=>{ detectScreens(); goSlide(0); };
+window.onload = ()=>{ applyFont(); detectScreens(); goSlide(0); };
 </script>
 </body>
 </html>
