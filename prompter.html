@@ -73,14 +73,20 @@
   #remotePanel.hidden{display:none;}
   #remotePanel .rp-title{font-size:15px;font-weight:900;letter-spacing:0.06em;color:#fff;}
   #remotePanel .rp-code{font-size:13px;color:var(--dim);margin-top:8px;}
-  #remotePanel .rp-code b{font-size:22px;color:var(--accent);letter-spacing:0.18em;font-weight:900;margin-left:6px;}
+  #remotePanel .rp-code b{font-size:30px;letter-spacing:0.22em;font-weight:900;margin-left:8px;font-family:'Inter',monospace;}
+  #remotePanel .rp-code .c-num{color:var(--accent);}      /* 숫자 = amber */
+  #remotePanel .rp-code .c-alpha{color:#3dd6ff;}          /* 영문 = cyan */
+  #remotePanel .rp-legend{font-size:10px;letter-spacing:0.1em;margin-top:4px;}
+  #remotePanel .rp-legend .c-num{color:var(--accent);font-weight:800;}
+  #remotePanel .rp-legend .c-alpha{color:#3dd6ff;font-weight:800;}
   #remotePanel .rp-sub{font-size:11px;color:var(--dim);margin-top:8px;line-height:1.55;word-break:keep-all;}
   #remotePanel .rp-sub b{color:#bbb;}
-  #remotePanel .rp-grid{display:flex;gap:14px;margin:16px 0 4px;}
-  #remotePanel .rp-cell{flex:1;}
+  #remotePanel .rp-block{margin-top:16px;}
   #remotePanel .rp-lbl{font-size:12px;font-weight:800;color:#fff;margin-bottom:8px;}
-  #remotePanel .qr{width:150px;height:150px;margin:0 auto;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-  #remotePanel .qr img, #remotePanel .qr canvas{width:150px !important;height:150px !important;}
+  #remotePanel .qr{width:170px;height:170px;margin:0 auto;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  #remotePanel .qr img, #remotePanel .qr canvas{width:170px !important;height:170px !important;}
+  #remotePanel .rp-deck{border-top:1px solid var(--border);padding-top:14px;}
+  #remotePanel .rp-url{font-family:'Inter',monospace;font-size:13px;font-weight:800;color:var(--accent);background:#000;border:1px solid var(--border);border-radius:8px;padding:9px 10px;word-break:break-all;}
   #remotePanel .rp-stat{font-size:12px;font-weight:800;letter-spacing:0.04em;margin-top:10px;}
   #remotePanel .rp-stat.on{color:#1c1;} #remotePanel .rp-stat.off{color:var(--accent);}
   #remotePanel .rp-close{margin-top:12px;background:#000;border:1px solid var(--border);color:#fff;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;}
@@ -108,17 +114,16 @@
 <div id="remotePanel" class="hidden">
   <div class="rp-title">🔗 기기 연결</div>
   <div class="rp-code">세션 코드<b id="rpCode">····</b></div>
-  <div class="rp-grid">
-    <div class="rp-cell">
-      <div class="rp-lbl">📱 폰 리모컨</div>
-      <div class="qr" id="qrPhone">…</div>
-    </div>
-    <div class="rp-cell">
-      <div class="rp-lbl">🖥 연단 슬라이드</div>
-      <div class="qr" id="qrDeck">…</div>
-    </div>
+  <div class="rp-legend"><span class="c-num">숫자</span> · <span class="c-alpha">영문</span> 색 구분</div>
+  <div class="rp-block">
+    <div class="rp-lbl">📱 폰 리모컨 — QR 스캔</div>
+    <div class="qr" id="qrPhone">…</div>
   </div>
-  <div class="rp-sub">연단 PC는 슬라이드 주소 끝에 <b>?follow=코드</b> 입력해도 됨</div>
+  <div class="rp-block rp-deck">
+    <div class="rp-lbl">🖥 연단 슬라이드 — 주소로 열기</div>
+    <div class="rp-url" id="deckUrl">…</div>
+    <div class="rp-sub" id="deckHint" style="margin-top:6px;"></div>
+  </div>
   <div class="rp-stat off" id="rpStat">대기 중</div>
   <div class="rp-sub" style="margin-top:8px;">가장 확실한 연결: 세 기기를 <b>같은 핫스팟</b>에</div>
   <button class="rp-close" onclick="toggleRemote()">닫기</button>
@@ -365,27 +370,39 @@ function deckBase(){
     ? 'https://bizsinsightclub.github.io/biz699-9/'
     : location.href.replace(/[^/]*(\?.*)?$/, '');
 }
-function randCode(){ return Math.random().toString(36).replace(/[^a-z0-9]/g,'').slice(0,4) || 'a1b2'; }
+// 헷갈리는 문자 제외: 0,O / 1,I,L 없음
+function randCode(){ const a='23456789abcdefghjkmnpqrstuvwxyz'; let s=''; for(let i=0;i<4;i++) s+=a[Math.floor(Math.random()*a.length)]; return s; }
 function deckFollowerCount(){ return remotes.filter(c=> c._role==='deck' && c.open).length; }
+
+// 숫자=amber, 영문=cyan 로 색 구분 렌더
+function renderCode(code){
+  const el = document.getElementById('rpCode'); el.innerHTML='';
+  code.toUpperCase().split('').forEach(ch=>{
+    const s = document.createElement('span');
+    s.textContent = ch; s.className = /[0-9]/.test(ch) ? 'c-num' : 'c-alpha';
+    el.appendChild(s);
+  });
+}
 
 function toggleRemote(){
   const panel = document.getElementById('remotePanel');
   if(!panel.classList.contains('hidden')){ panel.classList.add('hidden'); return; }
   panel.classList.remove('hidden');
-  if(!peer) initRemote(randCode());
+  if(!peer) startPeer('9jo', true, 0);   // 고정 코드 우선 → 연단은 ?live 로 자동 연결
 }
-function initRemote(code, attempt){
-  attempt = attempt || 0;
+function startPeer(code, fixed, attempt){
   setRemoteStat('off','연결 준비 중…');
   peer = new Peer('biz699-' + code);
   peer.on('open', (id)=>{
     const base = deckBase();
-    const phoneUrl = base + 'remote.html?id=' + id;
-    const deckUrl  = base + 'index.html?follow=' + id;   // 연단은 슬라이드 주소 + ?follow (index.html 자체가 인식)
-    document.getElementById('rpCode').innerText = code.toUpperCase();
-    renderQR('qrPhone', phoneUrl);
-    renderQR('qrDeck',  deckUrl);
-    setRemoteStat('off','기기 연결 대기 중 — QR 스캔');
+    renderCode(code);
+    renderQR('qrPhone', base + 'remote.html?id=' + id);
+    const deckUrl = fixed ? (base + '?live') : (base + '?follow=' + code);
+    document.getElementById('deckUrl').innerText = deckUrl;
+    document.getElementById('deckHint').innerHTML = fixed
+      ? '슬라이드 주소 끝에 <b>?live</b> 만 붙이면 코드 없이 자동 연결'
+      : '슬라이드 주소 끝에 <b>?follow=' + code.toUpperCase() + '</b> 입력';
+    setRemoteStat('off','기기 연결 대기 중');
   });
   peer.on('connection', (conn)=>{
     conn.on('open', ()=>{ remotes.push(conn); updateDevices(); sendState(conn); });
@@ -393,8 +410,10 @@ function initRemote(code, attempt){
     conn.on('close', ()=>{ remotes = remotes.filter(c=>c!==conn); updateDevices(); });
   });
   peer.on('error', (e)=>{
-    if(e.type==='unavailable-id' && attempt<5){ peer=null; initRemote(randCode(), attempt+1); }   // 코드 충돌 → 재시도
-    else setRemoteStat('off','연결 실패: '+e.type);
+    if(e.type==='unavailable-id'){            // 고정 id 사용중 → 랜덤 코드로 폴백(?follow 안내로 전환)
+      if(attempt<6){ peer=null; startPeer(randCode(), false, attempt+1); }
+      else setRemoteStat('off','연결 실패: 코드 충돌');
+    } else setRemoteStat('off','연결 실패: '+e.type);
   });
 }
 function handleRemoteCmd(d, conn){

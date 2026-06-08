@@ -83,16 +83,17 @@
 <table>
   <tr>
     <td width="38%"><img src="./screenshots/remote-phone.png" alt="Phone remote"/><br/><sub><b>📱 폰 리모컨</b> · 이전/다음 · 현재 슬라이드 · 남은 시간 · 가림</sub></td>
-    <td width="62%"><img src="./screenshots/prompter-remote-qr.png" alt="Device pairing"/><br/><sub><b>💻 프롬프터 기기 연결 패널</b> · 세션 코드 + 폰·연단 QR 2개</sub></td>
+    <td width="62%"><img src="./screenshots/prompter-remote-qr.png" alt="Device pairing"/><br/><sub><b>💻 프롬프터 기기 연결 패널</b> · 폰 QR + 연단 <code>?live</code> 주소 · 코드 색 구분</sub></td>
   </tr>
 </table>
 
-**연결 (프롬프터의 `🔗 기기 연결` 버튼 → 패널에 세션 코드 + QR 2개)**
+**연결 (프롬프터의 `🔗 기기 연결` 버튼 → 패널)**
 - **📱 폰**: "폰 리모컨" QR 스캔 → `remote.html` 열림 → 이전/다음·시작·가림 조작.
-- **🖥 연단 PC** (QR 못 읽을 때): 연단의 **슬라이드 주소 끝에 `?follow=세션코드`** 만 붙여 다시 연다.
-  예: `https://bizsinsightclub.github.io/biz699-9/?follow=OK62`
-  → `index.html` 이 직접 호스트를 따라간다(별도 페이지 불필요). 화면 **좌하단 배지**에 `연단 연동: 연결됨 ✓` 가 뜨면 성공. 실패하면 배지가 **사유**(패널 꺼짐 / 핫스팟 / 방화벽)를 알려준다.
-  - 주소에 `#/3` 같은 해시가 있어도 `?follow=` 인식. 코드 대소문자 무관.
+- **🖥 연단 PC**: 슬라이드 주소 끝에 **`?live`** 만 붙여 열면 **코드 입력 없이 자동 연결**.
+  예: `https://bizsinsightclub.github.io/biz699-9/?live`
+  → `index.html` 이 고정 세션(`biz699-9jo`)을 따라간다. 화면 **좌하단 배지**에 `연결됨 ✓` 가 뜨면 성공, 실패면 **사유**(패널 꺼짐 / 핫스팟 / 방화벽)를 표시.
+  - 고정 세션이 이미 사용 중이면 패널이 `?follow=코드` 로 안내(그땐 코드 입력). **세션 코드는 헷갈리는 0·O·1·I·L 을 빼고, 숫자=amber·영문=cyan 으로 색 구분**. 해시가 있어도 인식, 대소문자 무관.
+- 연단은 카메라가 없어 QR을 못 읽으므로 QR 대신 **주소(`?live`)** 로 연결한다.
 - 패널에 연결 현황 표시(`📱 1 · 🖥 1`). 연단이 붙으면 `발표 시작` 시 노트북 로컬 창을 따로 열지 않는다.
 
 **특징**

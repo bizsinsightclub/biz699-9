@@ -1193,12 +1193,16 @@
      ===================================================================== -->
 <script>
 (function(){
-  var raw = new URLSearchParams(location.search).get('follow');
+  var sp = new URLSearchParams(location.search);
+  var raw = sp.get('follow');
+  // ?live → 고정 세션(biz699-9jo) 자동 연결 (코드 입력 불필요)
+  var liveFlag = sp.has('live') || /[?&]live(?:[=&]|$)/.test(location.hash || '');
+  if(!raw && liveFlag) raw = '9jo';
   if(!raw){                                          // #/5?follow=.. 처럼 해시 뒤에 붙은 경우도 인식
     var m = (location.hash || '').match(/follow=([a-z0-9-]+)/i);
     if(m) raw = m[1];
   }
-  if(!raw) return;                                   // 평소엔 아무것도 안 함
+  if(!raw) return;                                   // 평소엔 아무것도 안 함 (일반 deck/PDF)
   var hostId = raw.startsWith('biz699-') ? raw.toLowerCase() : ('biz699-' + raw.toLowerCase());
 
   // 연결 상태 배지
