@@ -363,7 +363,7 @@ function initRemote(code, attempt){
   peer.on('open', (id)=>{
     const base = deckBase();
     const phoneUrl = base + 'remote.html?id=' + id;
-    const deckUrl  = base + 'viewer.html?follow=' + id;
+    const deckUrl  = base + 'index.html?follow=' + id;   // 연단은 슬라이드 주소 + ?follow (index.html 자체가 인식)
     document.getElementById('rpCode').innerText = code.toUpperCase();
     renderQR('qrPhone', phoneUrl);
     renderQR('qrDeck',  deckUrl);

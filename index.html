@@ -1187,5 +1187,69 @@
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
 <script src="./js/config.js"></script>
 
+<!-- ========================================================================
+     연단 동기화(follower) — 슬라이드 주소 끝에 ?follow=세션코드 가 있을 때만 작동.
+     없으면 PeerJS 도 안 받고 일반 deck/PDF 그대로. (호스트 = 노트북 prompter.html)
+     ===================================================================== -->
+<script>
+(function(){
+  var raw = new URLSearchParams(location.search).get('follow');
+  if(!raw){                                          // #/5?follow=.. 처럼 해시 뒤에 붙은 경우도 인식
+    var m = (location.hash || '').match(/follow=([a-z0-9-]+)/i);
+    if(m) raw = m[1];
+  }
+  if(!raw) return;                                   // 평소엔 아무것도 안 함
+  var hostId = raw.startsWith('biz699-') ? raw.toLowerCase() : ('biz699-' + raw.toLowerCase());
+
+  // 연결 상태 배지
+  var bar = document.createElement('div');
+  bar.id = 'follow-badge';
+  bar.style.cssText = 'position:fixed;left:14px;bottom:12px;z-index:9999;display:flex;align-items:center;gap:8px;'
+    + 'font:600 13px/1 Inter,system-ui,sans-serif;color:#ddd;background:rgba(0,0,0,.72);'
+    + 'border:1px solid #333;border-radius:999px;padding:8px 14px;transition:opacity .5s;';
+  var dot = document.createElement('span');
+  dot.style.cssText = 'width:10px;height:10px;border-radius:50%;background:#e6a100;';
+  var txt = document.createElement('span');
+  txt.textContent = '연단 연동: 호스트(' + hostId + ') 연결 중…';
+  bar.appendChild(dot); bar.appendChild(txt); document.body.appendChild(bar);
+  function set(state, message){
+    dot.style.background = state==='ok' ? '#19c219' : state==='bad' ? '#e63b3b' : '#e6a100';
+    txt.textContent = message;
+    if(state==='ok'){ setTimeout(function(){ bar.style.opacity='0'; }, 3500); }
+  }
+  document.addEventListener('mousemove', function(){ bar.style.opacity='1'; });
+
+  // Reveal 준비 상태 추적 + 마지막 인덱스 적용
+  var lastIdx = 0, ready = false;
+  function apply(){ if(ready && window.Reveal && Reveal.slide){ try{ Reveal.slide(lastIdx); }catch(e){} } }
+  function markReady(){ ready = true; apply(); }
+  if(window.Reveal && Reveal.on){ try{ Reveal.on('ready', markReady); }catch(e){} }
+  setTimeout(markReady, 1500);                       // 폴백
+
+  // PeerJS 동적 로드 → 호스트에 연결
+  var s = document.createElement('script');
+  s.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+  s.onload = function(){
+    try{
+      var peer = new Peer();
+      peer.on('open', function(){
+        var conn = peer.connect(hostId, { reliable:true });
+        conn.on('open', function(){
+          set('ok','연단 연동: 연결됨 ✓ — 프롬프터를 따라갑니다');
+          conn.send({ cmd:'hello', role:'deck' });
+        });
+        conn.on('data', function(d){ if(d && d.type==='state'){ lastIdx = d.idx; apply(); } });
+        conn.on('close', function(){ set('bad','연단 연동: 끊김 — 새로고침'); });
+        conn.on('error', function(){ set('bad','연단 연동: 연결 오류'); });
+      });
+      peer.on('error', function(e){
+        set('bad','연단 연동 실패: ' + e.type + ' — 노트북 프롬프터의 기기 연결 패널이 켜져 있는지 + 같은 핫스팟인지 확인');
+      });
+    }catch(err){ set('bad','연단 연동 오류: PeerJS 로드 실패'); }
+  };
+  s.onerror = function(){ set('bad','연단 연동 실패: PeerJS 다운로드 차단(인터넷/방화벽 확인)'); };
+  document.head.appendChild(s);
+})();
+</script>
 </body>
 </html>
