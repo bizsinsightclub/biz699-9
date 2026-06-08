@@ -69,20 +69,33 @@
 
 > 모니터 자동 감지·배치는 **Window Management API**(Chrome/Edge 110+) 사용. 미지원/거부 시 일반 창으로 열리며 수동 드래그 + `F`.
 
-### 📱 핸드폰 리모컨 (WebRTC, 서버 없음)
+### 🔗 3-기기 연동 — 폰 리모컨 · 노트북 프롬프터 · 연단 슬라이드 (WebRTC, 서버 없음)
 
-핸드폰을 무선 리모컨으로 — 걸어다니며 슬라이드를 넘긴다. 프롬프터의 **`📱 리모컨`** 버튼 → QR 표시 → 폰 카메라로 스캔 → 즉시 연결(PeerJS P2P).
+세 기기가 한 세션으로 묶인다. **폰에서 "다음"을 누르면 노트북 프롬프터와 연단 슬라이드가 동시에** 넘어간다.
+
+```
+   📱 폰 remote.html ─(명령)─▶ 💻 노트북 prompter.html (허브/호스트) ─(상태)─▶ 🖥 연단 viewer.html → index.html
+        리모컨                     goSlide() · 대본 · 타이머              슬라이드를 호스트에 맞춰 따라감
+```
 
 <table>
   <tr>
-    <td width="38%"><img src="./screenshots/remote-phone.png" alt="Phone remote"/><br/><sub><b>폰 리모컨</b> · 이전/다음 · 현재 슬라이드 · 남은 시간 · 가림</sub></td>
-    <td width="62%"><img src="./screenshots/prompter-remote-qr.png" alt="Prompter QR"/><br/><sub><b>프롬프터 QR 패널</b> · 스캔 한 번으로 페어링</sub></td>
+    <td width="38%"><img src="./screenshots/remote-phone.png" alt="Phone remote"/><br/><sub><b>📱 폰 리모컨</b> · 이전/다음 · 현재 슬라이드 · 남은 시간 · 가림</sub></td>
+    <td width="62%"><img src="./screenshots/prompter-remote-qr.png" alt="Device pairing"/><br/><sub><b>💻 프롬프터 기기 연결 패널</b> · 세션 코드 + 폰·연단 QR 2개</sub></td>
   </tr>
 </table>
 
-- 폰 버튼: **이전 / 다음**(큰 탭 영역) · **가림/시작** 토글 · **처음으로**. 현재 슬라이드 번호·라벨·다음 제목·남은 시간이 실시간 표시.
-- 폰 → 프롬프터 → 썸네일·프로젝터가 **한 번에** 이동. 폰의 볼륨/방향키(블루투스 클리커)도 인식.
-- 서버·계정 불필요(PeerJS 공개 브로커). **가장 확실한 연결: 노트북·폰을 같은 핫스팟에** 두면 거의 항상 붙는다(제한적 강연장 wifi 대비).
+**연결 (프롬프터의 `🔗 기기 연결` 버튼 → 패널)**
+- **📱 폰**: "폰 리모컨" QR 스캔 → `remote.html` 열림 → 이전/다음·시작·가림 조작.
+- **🖥 연단 PC**: "연단 슬라이드" QR 스캔, 또는 슬라이드 주소 끝에 **`?follow=세션코드`**(예: `?follow=OK62`) 입력 → `viewer.html` 이 `index.html` 을 띄우고 호스트를 따라간다.
+- 패널에 연결 현황 표시(`📱 1 · 🖥 1`). 연단이 붙으면 `발표 시작` 시 노트북 로컬 창을 따로 열지 않는다.
+
+**특징**
+- 서버·계정 불필요(PeerJS 공개 브로커). `index.html` 은 무수정(viewer가 감싸서 동기화).
+- 폰의 볼륨/방향키(블루투스 클리커)도 인식. 폰 화면 꺼짐 방지(wakeLock).
+- **가장 확실한 연결: 세 기기를 같은 핫스팟에.** 제한적 강연장 wifi는 P2P를 막을 수 있으니 리허설 때 1회 점검.
+
+> 2-기기(노트북=프롬프터+프로젝터)만 쓸 때는 연단 연동 없이 `프로젝터에 슬라이드 띄우기`로 같은 노트북에서 바로 띄운다.
 
 ---
 
@@ -131,8 +144,9 @@ npm run pdf        # → output/slides.pdf (35p, 1440×810pt = 16:9)
 ```
 output/
 ├── index.html         # Reveal.js 진입점 (35 <section> + 발표자 노트)
-├── prompter.html      # 발표자 텔레프롬프터 (슬라이드 동기화 · 듀얼 스크린 · 리모컨 호스트)
+├── prompter.html      # 발표자 텔레프롬프터 (허브/호스트 · 듀얼 스크린 · 기기 연결)
 ├── remote.html        # 핸드폰 무선 리모컨 (WebRTC P2P)
+├── viewer.html        # 연단 PC 슬라이드 뷰어 (호스트를 따라 동기화)
 ├── README.md          # 이 문서
 ├── css/               # tokens · base · templates · components · print
 ├── js/config.js       # Reveal.js v5 초기화 (transition: none, 1920×1080)

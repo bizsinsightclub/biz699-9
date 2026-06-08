@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>연단 슬라이드 (동기화) · 9조 BIZ699</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+  html,body{margin:0;height:100%;background:#0E0E0E;overflow:hidden;}
+  #deck{width:100vw;height:100vh;border:0;display:block;background:#0E0E0E;}
+  #status{position:fixed;left:16px;bottom:14px;z-index:10;display:flex;align-items:center;gap:8px;
+    font-family:'Inter',system-ui,sans-serif;font-size:12px;letter-spacing:0.04em;color:#888;
+    background:rgba(0,0,0,.6);border:1px solid #262626;border-radius:999px;padding:7px 14px;transition:opacity .5s;}
+  #status.hidden{opacity:0;pointer-events:none;}
+  #status .dot{width:9px;height:9px;border-radius:50%;background:#888;}
+  #status .dot.ok{background:#0c0;} #status .dot.bad{background:#e33;}
+  /* 연결 안내 오버레이 */
+  #help{position:fixed;inset:0;z-index:20;background:#0E0E0E;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:'Inter',system-ui,sans-serif;color:#fff;text-align:center;padding:40px;}
+  #help.hidden{display:none;}
+  #help h1{font-size:30px;font-weight:900;margin:0 0 14px;}
+  #help p{font-size:15px;color:#888;line-height:1.7;max-width:560px;word-break:keep-all;}
+  #help code{background:#1c1c1c;border:1px solid #333;border-radius:6px;padding:2px 8px;color:#F97316;font-size:15px;}
+</style>
+</head>
+<body>
+<iframe id="deck" src="index.html"></iframe>
+<div id="status"><span class="dot" id="dot"></span><span id="stxt">연단 슬라이드 — 연결 중…</span></div>
+
+<div id="help" class="hidden">
+  <h1>연단 슬라이드 — 연결 코드가 필요합니다</h1>
+  <p>노트북 프롬프터의 <b>🔗 기기 연결</b> 패널에서 <b>연단 슬라이드 QR</b>을 스캔하거나,<br>
+     이 주소 끝에 <code>?follow=코드</code> 를 붙여 다시 여세요. (예: <code>?follow=7K2P</code>)</p>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+let fid = params.get('follow');
+if (fid && !fid.startsWith('biz699-')) fid = 'biz699-' + fid.toLowerCase();   // 짧은 코드 → 전체 id
+
+const frame = document.getElementById('deck');
+function toReveal(idx){ try{ frame.contentWindow.postMessage(JSON.stringify({method:'slide', args:[idx]}), '*'); }catch(e){} }
+function status(text, state){
+  document.getElementById('stxt').innerText = text;
+  document.getElementById('dot').className = 'dot' + (state==='ok'?' ok':state==='bad'?' bad':'');
+}
+function hideStatusSoon(){ setTimeout(()=> document.getElementById('status').classList.add('hidden'), 2500); }
+
+let lastIdx = 0;
+if (!fid){
+  document.getElementById('help').classList.remove('hidden');
+  status('연결 코드 없음', 'bad');
+} else {
+  const peer = new Peer();
+  let conn = null;
+  peer.on('open', ()=>{
+    conn = peer.connect(fid, { reliable:true });
+    conn.on('open', ()=>{ status('연결됨 ✓ — 프롬프터를 따라갑니다', 'ok'); conn.send({cmd:'hello', role:'deck'}); hideStatusSoon(); });
+    conn.on('data', d=>{ if(d && d.type==='state'){ lastIdx = d.idx; document.documentElement.dataset.idx = d.idx; toReveal(d.idx); } });
+    conn.on('close', ()=> status('연결 끊김 — 새로고침', 'bad'));
+    conn.on('error', ()=> status('연결 오류', 'bad'));
+  });
+  peer.on('error', e=> status('연결 실패: '+e.type+' — 같은 핫스팟 확인 후 새로고침', 'bad'));
+}
+
+// 슬라이드(iframe)가 늦게 로드돼도 현재 위치로 재정렬
+frame.addEventListener('load', ()=> setTimeout(()=> toReveal(lastIdx), 600));
+// 마우스 움직이면 상태칩 잠깐 다시 보임(연결 확인용)
+document.onmousemove = ()=>{ const s=document.getElementById('status'); s.classList.remove('hidden'); clearTimeout(window._h); window._h=setTimeout(()=>s.classList.add('hidden'),2000); };
+</script>
+</body>
+</html>

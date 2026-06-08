@@ -67,16 +67,22 @@
   .nav-btn:hover{background:#fff;color:#000;}
   .hint{position:fixed;bottom:30px;left:360px;font-size:11px;color:var(--dim);letter-spacing:0.08em;}
 
-  /* === 리모컨 QR 패널 === */
-  #remotePanel{position:fixed;top:64px;right:24px;width:300px;background:var(--panel,#141414);border:1px solid var(--border);border-radius:16px;padding:22px;z-index:80;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+  /* === 기기 연결 QR 패널 === */
+  #remotePanel{position:fixed;top:64px;right:24px;width:380px;background:var(--panel,#141414);border:1px solid var(--border);border-radius:16px;padding:20px;z-index:80;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6);}
   #remotePanel.hidden{display:none;}
-  #remotePanel .rp-title{font-size:14px;font-weight:900;letter-spacing:0.06em;color:#fff;}
-  #remotePanel .rp-sub{font-size:12px;color:var(--dim);margin-top:6px;line-height:1.5;word-break:keep-all;}
-  #remotePanel #qrbox{width:200px;height:200px;margin:16px auto;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-  #remotePanel #qrbox img, #remotePanel #qrbox canvas{width:200px;height:200px;}
-  #remotePanel .rp-stat{font-size:12px;font-weight:700;letter-spacing:0.05em;margin-top:6px;}
-  #remotePanel .rp-stat.on{color:#0c0;} #remotePanel .rp-stat.off{color:var(--accent);}
-  #remotePanel .rp-close{margin-top:14px;background:#000;border:1px solid var(--border);color:#fff;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;}
+  #remotePanel .rp-title{font-size:15px;font-weight:900;letter-spacing:0.06em;color:#fff;}
+  #remotePanel .rp-code{font-size:13px;color:var(--dim);margin-top:8px;}
+  #remotePanel .rp-code b{font-size:22px;color:var(--accent);letter-spacing:0.18em;font-weight:900;margin-left:6px;}
+  #remotePanel .rp-sub{font-size:11px;color:var(--dim);margin-top:8px;line-height:1.55;word-break:keep-all;}
+  #remotePanel .rp-sub b{color:#bbb;}
+  #remotePanel .rp-grid{display:flex;gap:14px;margin:16px 0 4px;}
+  #remotePanel .rp-cell{flex:1;}
+  #remotePanel .rp-lbl{font-size:12px;font-weight:800;color:#fff;margin-bottom:8px;}
+  #remotePanel .qr{width:150px;height:150px;margin:0 auto;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  #remotePanel .qr img, #remotePanel .qr canvas{width:150px !important;height:150px !important;}
+  #remotePanel .rp-stat{font-size:12px;font-weight:800;letter-spacing:0.04em;margin-top:10px;}
+  #remotePanel .rp-stat.on{color:#1c1;} #remotePanel .rp-stat.off{color:var(--accent);}
+  #remotePanel .rp-close{margin-top:12px;background:#000;border:1px solid var(--border);color:#fff;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;}
   .deck-btn.remote-on{background:#0a0;color:#fff;}
   ::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-thumb{background:#222;}
 </style>
@@ -92,19 +98,28 @@
   <div class="head-right">
     <div class="status-tag" id="screenTag" title="감지된 디스플레이">화면 ?</div>
     <div class="status-tag" id="statusTag">STANDBY</div>
-    <button class="deck-btn" id="remoteBtn" onclick="toggleRemote()" style="background:#000;color:#fff;border:1px solid var(--border);">📱 리모컨</button>
+    <button class="deck-btn" id="remoteBtn" onclick="toggleRemote()" style="background:#000;color:#fff;border:1px solid var(--border);">🔗 기기 연결</button>
     <button class="deck-btn" id="coverBtn" onclick="coverShow()" style="background:#000;color:#fff;border:1px solid var(--border);">가림 (Esc)</button>
     <button class="deck-btn" id="deckBtn" onclick="toggleDeck()">프로젝터에 슬라이드 띄우기</button>
   </div>
 </header>
 
 <div id="remotePanel" class="hidden">
-  <div class="rp-title">📱 핸드폰 리모컨</div>
-  <div class="rp-sub">폰 카메라로 QR 스캔 → 리모컨 연결</div>
-  <div id="qrbox">준비 중…</div>
-  <a id="rpUrl" href="#" target="_blank" style="display:block;font-size:10px;color:#666;word-break:break-all;margin-top:6px;text-decoration:none;"></a>
-  <div class="rp-stat off" id="rpStat">리모컨 대기 중</div>
-  <div class="rp-sub" style="margin-top:8px;">가장 확실한 연결: 노트북·폰을 <b>같은 핫스팟</b>에</div>
+  <div class="rp-title">🔗 기기 연결</div>
+  <div class="rp-code">세션 코드<b id="rpCode">····</b></div>
+  <div class="rp-grid">
+    <div class="rp-cell">
+      <div class="rp-lbl">📱 폰 리모컨</div>
+      <div class="qr" id="qrPhone">…</div>
+    </div>
+    <div class="rp-cell">
+      <div class="rp-lbl">🖥 연단 슬라이드</div>
+      <div class="qr" id="qrDeck">…</div>
+    </div>
+  </div>
+  <div class="rp-sub">연단 PC는 슬라이드 주소 끝에 <b>?follow=코드</b> 입력해도 됨</div>
+  <div class="rp-stat off" id="rpStat">대기 중</div>
+  <div class="rp-sub" style="margin-top:8px;">가장 확실한 연결: 세 기기를 <b>같은 핫스팟</b>에</div>
   <button class="rp-close" onclick="toggleRemote()">닫기</button>
 </div>
 
@@ -213,11 +228,14 @@ function coverHide(){
   coverVisible = false;
   document.getElementById('cover').classList.add('hidden');
   if(!started){ started = true; startTs = Date.now(); slideEnteredAt = Date.now(); }
-  // 발표 시작 = 프로젝터에 슬라이드 자동 켜짐 (아직 안 열렸을 때만)
+  // 발표 시작 시 슬라이드 켜기 — 단, 연단 PC(viewer)가 이미 연결돼 있으면 로컬 창을 열지 않는다
+  const hasNetworkDeck = (typeof deckFollowerCount === 'function') && deckFollowerCount() > 0;
   if(deckWin && !deckWin.closed){
     document.getElementById('statusTag').innerText = 'LIVE — 프로젝터';
+  } else if(hasNetworkDeck){
+    document.getElementById('statusTag').innerText = 'LIVE — 연단 연동';
   } else {
-    toggleDeck();   // 슬라이드 창을 프로젝터에 열고 현재 슬라이드로 동기화 (status 는 toggleDeck 이 설정)
+    toggleDeck();   // (2-기기 모드) 같은 노트북에서 프로젝터 창 열기
   }
   if(typeof broadcastState === 'function') broadcastState();
 }
@@ -320,40 +338,61 @@ window.onkeydown = (e)=>{
 /* ===== 보조 창 동기화 수신 ===== */
 sync.onmessage = (e)=>{ if(e.data && typeof e.data.slide==='number') goSlide(e.data.slide, true); };
 
-/* ===== 핸드폰 리모컨 (PeerJS WebRTC 호스트) ===== */
+/* ===== 기기 연결 허브 (PeerJS WebRTC 호스트) =====
+   프롬프터(이 창)가 허브. 폰(remote.html)·연단PC(viewer.html)가 모두 여기에 붙는다.
+   폰 명령 → goSlide → 모든 기기에 state broadcast → 연단 슬라이드·썸네일 동시 이동. */
 let peer = null, remotes = [];
+function deckBase(){
+  return (location.protocol === 'file:')
+    ? 'https://bizsinsightclub.github.io/biz699-9/'
+    : location.href.replace(/[^/]*(\?.*)?$/, '');
+}
+function randCode(){ return Math.random().toString(36).replace(/[^a-z0-9]/g,'').slice(0,4) || 'a1b2'; }
+function deckFollowerCount(){ return remotes.filter(c=> c._role==='deck' && c.open).length; }
+
 function toggleRemote(){
   const panel = document.getElementById('remotePanel');
   if(!panel.classList.contains('hidden')){ panel.classList.add('hidden'); return; }
   panel.classList.remove('hidden');
-  if(!peer) initRemote();
+  if(!peer) initRemote(randCode());
 }
-function initRemote(){
-  setRemoteStat('off','PeerJS 연결 중…');
-  peer = new Peer();
+function initRemote(code, attempt){
+  attempt = attempt || 0;
+  setRemoteStat('off','연결 준비 중…');
+  peer = new Peer('biz699-' + code);
   peer.on('open', (id)=>{
-    // 폰이 열 remote.html 의 공개 주소 (file:// 이면 Pages 주소로 폴백)
-    const base = (location.protocol === 'file:')
-      ? 'https://bizsinsightclub.github.io/biz699-9/'
-      : location.href.replace(/[^/]*(\?.*)?$/, '');
-    const url = base + 'remote.html?id=' + id;
-    renderQR(url);
-    const a = document.getElementById('rpUrl'); a.href = url; a.innerText = url;
-    setRemoteStat('off','리모컨 대기 중 — QR 스캔');
+    const base = deckBase();
+    const phoneUrl = base + 'remote.html?id=' + id;
+    const deckUrl  = base + 'viewer.html?follow=' + id;
+    document.getElementById('rpCode').innerText = code.toUpperCase();
+    renderQR('qrPhone', phoneUrl);
+    renderQR('qrDeck',  deckUrl);
+    setRemoteStat('off','기기 연결 대기 중 — QR 스캔');
   });
   peer.on('connection', (conn)=>{
-    conn.on('open', ()=>{ remotes.push(conn); setRemoteStat('on','리모컨 연결됨 ✓'); document.getElementById('remoteBtn').classList.add('remote-on'); sendState(conn); });
-    conn.on('data', (d)=> handleRemoteCmd(d));
-    conn.on('close', ()=>{ remotes = remotes.filter(c=>c!==conn); if(!remotes.length){ setRemoteStat('off','리모컨 연결 끊김'); document.getElementById('remoteBtn').classList.remove('remote-on'); } });
+    conn.on('open', ()=>{ remotes.push(conn); updateDevices(); sendState(conn); });
+    conn.on('data', (d)=> handleRemoteCmd(d, conn));
+    conn.on('close', ()=>{ remotes = remotes.filter(c=>c!==conn); updateDevices(); });
   });
-  peer.on('error', (e)=> setRemoteStat('off','연결 실패: '+e.type));
+  peer.on('error', (e)=>{
+    if(e.type==='unavailable-id' && attempt<5){ peer=null; initRemote(randCode(), attempt+1); }   // 코드 충돌 → 재시도
+    else setRemoteStat('off','연결 실패: '+e.type);
+  });
 }
-function handleRemoteCmd(d){
+function handleRemoteCmd(d, conn){
   if(!d || !d.cmd) return;
+  if(d.cmd==='hello'){ if(conn) conn._role = d.role; updateDevices(); return; }
   if(d.cmd==='next')       goSlide(currentSlide+1);
   else if(d.cmd==='prev')  goSlide(currentSlide-1);
   else if(d.cmd==='first') goSlide(0);
   else if(d.cmd==='toggleCover') (coverVisible ? coverHide() : coverShow());
+}
+function updateDevices(){
+  const phones = remotes.filter(c=> c._role==='remote' && c.open).length;
+  const decks  = deckFollowerCount();
+  const btn = document.getElementById('remoteBtn');
+  if(phones+decks>0){ setRemoteStat('on', `연결됨 ✓  📱 ${phones} · 🖥 ${decks}`); btn.classList.add('remote-on'); }
+  else { setRemoteStat('off','기기 연결 대기 중 — QR 스캔'); btn.classList.remove('remote-on'); }
 }
 function makeState(){
   const s = scripts[currentSlide], nx = scripts[currentSlide+1];
@@ -367,10 +406,10 @@ function makeState(){
 function broadcastState(){ const st = makeState(); remotes.forEach(c=>{ if(c.open) c.send(st); }); }
 function sendState(conn){ if(conn.open) conn.send(makeState()); }
 function setRemoteStat(kind, text){ const el=document.getElementById('rpStat'); el.className='rp-stat '+kind; el.innerText=text; }
-function renderQR(url){
-  const box = document.getElementById('qrbox'); box.innerHTML='';
-  try{ new QRCode(box, { text:url, width:200, height:200, colorDark:'#000', colorLight:'#fff' }); }
-  catch(e){ box.innerHTML = '<a href="'+url+'" style="font-size:11px;word-break:break-all;color:#000;padding:8px;">'+url+'</a>'; }
+function renderQR(elId, url){
+  const box = document.getElementById(elId); box.innerHTML='';
+  try{ new QRCode(box, { text:url, width:150, height:150, colorDark:'#000', colorLight:'#fff' }); }
+  catch(e){ box.innerHTML = '<a href="'+url+'" style="font-size:9px;word-break:break-all;color:#000;padding:6px;">'+url+'</a>'; }
 }
 
 /* ===== 썸네일이 늦게 로드되면 현재 슬라이드로 재정렬 ===== */

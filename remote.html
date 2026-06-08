@@ -103,7 +103,7 @@ if(!hostId){
   const peer = new Peer();
   peer.on('open', ()=>{
     conn = peer.connect(hostId, { reliable:true });
-    conn.on('open', ()=>{ setConn('ok','연결됨'); document.getElementById('wait').classList.add('hidden'); buzz(40); });
+    conn.on('open', ()=>{ setConn('ok','연결됨'); document.getElementById('wait').classList.add('hidden'); buzz(40); conn.send({cmd:'hello', role:'remote'}); });
     conn.on('data', d=>{ if(d && d.type==='state') render(d); });
     conn.on('close', ()=>{ setConn('bad','연결 끊김'); });
     conn.on('error', ()=> setConn('bad','오류'));
